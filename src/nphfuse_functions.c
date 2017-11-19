@@ -29,10 +29,9 @@ void GetFullPath(const char *path, char *fullPath)
 
     memset(fullPath, 0, PATH_MAX);
     strcpy(fullPath, nphfuse_data->device_name);
-    if (strcmp(path, "/"))
-    {
-        strncat(fullPath, path, PATH_MAX - strlen(nphfuse_data->device_name));
-    }
+    
+    strncat(fullPath, path, PATH_MAX - strlen(nphfuse_data->device_name));
+    
     printf("[%s]: path:%s, fullPath:%s\n", __func__, path, fullPath);
     printf("[%s]: rootdir:%s\n", __func__, NPHFS_DATA->device_name);
 
