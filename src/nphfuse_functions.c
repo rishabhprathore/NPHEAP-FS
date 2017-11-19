@@ -79,7 +79,7 @@ int nphfuse_readlink(const char *path, char *link, size_t size)
     int retVal = 0;
 
     GetFullPath(path, fullPath);
-    retVal = readlink(fpath, link, size - 1);
+    retVal = readlink(fullPath, link, size - 1);
     if (retVal >= 0)
     {
         link[retVal] = '\0';
