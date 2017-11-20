@@ -22,21 +22,35 @@
 
 extern struct nphfuse_state *nphfuse_data;
 
-void GetFullPath(const char *path, char *fullPath)
+char *GetFileName(char *str_tmp)
 {
-    if (!path || !fullPath)
-        return;
+    const char s[] = "/";
+    char *token;
+    char *last;
+    char *str = strdup(str_tmp);
+    last = token = strtok(str, s);
 
+    while ((token = strtok(NULL, s)) != NULL)
+    {
+        last = token;
+    }
+
+    return (last);
+}
+
+void GetFullPath(const char *path, char *fp)
+{
+    char *fileName = NULL;
     memset(fullPath, 0, PATH_MAX);
-    strcpy(fullPath, nphfuse_data->device_name);
-    
-    strncat(fullPath, path, PATH_MAX - strlen(nphfuse_data->device_name));
-    
+    strcpy(fp, "/tmp/npheap");
+    if(strcmp(path, "/"))
+    {
+        strcat(fp, path);
+    }
     printf("[%s]: path:%s, fullPath:%s\n", __func__, path, fullPath);
-    printf("[%s]: rootdir:%s\n", __func__, NPHFS_DATA->device_name);
-
     return;
 }
+
 
 ///////////////////////////////////////////////////////////
 //
@@ -51,12 +65,21 @@ void GetFullPath(const char *path, char *fullPath)
  */
 int nphfuse_getattr(const char *path, struct stat *stbuf)
 {
-    char fullPath[PATH_MAX];
+    char fp[PATH_MAX];
+    char cmd[PATH_MAX];
     int retVal = 0;
+    static int first = 0;
 
-    GetFullPath(path, fullPath);
+    GetFullPath(path, fp);
+    if(first==0){
+        memset(cmd, 0, PATH_MAX);
+        strcpy(cmd, "mkdir ");
+        strcat(cmd, fullPath);
+        system(cmd);
+        first = 1;
+    }
+
     retVal = lstat(fullPath, stbuf);
-
     return retVal;
 }
 
