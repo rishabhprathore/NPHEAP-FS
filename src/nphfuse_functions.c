@@ -41,13 +41,13 @@ char *GetFileName(char *str_tmp)
 void GetFullPath(const char *path, char *fp)
 {
     char *fileName = NULL;
-    memset(fullPath, 0, PATH_MAX);
+    memset(fp, 0, PATH_MAX);
     strcpy(fp, "/tmp/npheap");
     if(strcmp(path, "/"))
     {
         strcat(fp, path);
     }
-    printf("[%s]: path:%s, fullPath:%s\n", __func__, path, fullPath);
+    printf("[%s]: path:%s, fullPath:%s\n", __func__, path, fp);
     return;
 }
 
@@ -69,7 +69,6 @@ int nphfuse_getattr(const char *path, struct stat *stbuf)
     int retVal = 0;
     static int first = 0;
     GetFullPath(path, fp);
-    fp = "/tmp/npheap";
     if(first==0){
         system("mkdir /tmp/npheap");
         first = 1;
