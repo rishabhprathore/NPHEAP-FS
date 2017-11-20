@@ -66,20 +66,15 @@ void GetFullPath(const char *path, char *fp)
 int nphfuse_getattr(const char *path, struct stat *stbuf)
 {
     char fp[PATH_MAX];
-    char cmd[PATH_MAX];
     int retVal = 0;
     static int first = 0;
-
     GetFullPath(path, fp);
+    fp = "/tmp/npheap";
     if(first==0){
-        memset(cmd, 0, PATH_MAX);
-        strcpy(cmd, "mkdir ");
-        strcat(cmd, fullPath);
-        system(cmd);
+        system("mkdir /tmp/npheap");
         first = 1;
     }
-
-    retVal = lstat(fullPath, stbuf);
+    retVal = lstat(fp, stbuf);
     return retVal;
 }
 
