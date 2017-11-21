@@ -353,18 +353,18 @@ int nphfuse_open(const char *path, struct fuse_file_info *fi)
     int retstat = 0;
     int fd;
     char fpath[PATH_MAX];
-
+    GetFullPath(path, fpath);
+    retstat = open(fpath, fi->flags);
     
-    GetFullPath(fpath, path);
 
     // if the open call succeeds, my retstat is the file descriptor,
     // else it's -errno.  I'm making sure that in that case the saved
     // file descriptor is exactly -1.
     
 
-    fi->fh = fd;
+    fi->fh = retstat;
 
-    return retstat;
+    return 0;
 }
 
 /** Read data from an open file
