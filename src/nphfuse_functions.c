@@ -20,7 +20,6 @@
 #include "nphfuse.h"
 #include <npheap.h>
 
-extern struct nphfuse_state *nphfuse_data;
 
 char *GetFileName(char *str_tmp)
 {
