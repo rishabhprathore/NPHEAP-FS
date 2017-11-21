@@ -613,11 +613,12 @@ int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
 int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset,
                     struct fuse_file_info *fi)
 {
-    char fullPath[PATH_MAX];
-    DIR *dir = NULL;
+    char fp[PATH_MAX];
+    int retstat =0;
+    DIR *dp;
     struct dirent *de;
 
-    GetFullPath(path, fullPath);
+    GetFullPath(path, fp);
     dir = (DIR *)(uintptr_t)fi->fh;
     de = readdir(dir);
     if (!de)
@@ -630,11 +631,7 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
 
     } while ((de = readdir(dir)) != NULL);
 
-    return 0;
-#if 0
-    printf ("[%s]: path:%s, offset:%ld\n", __func__, path, offset);
-    return 0;
-#endif
+    return retstat;
 }
 
 /** Release directory
@@ -656,22 +653,18 @@ int nphfuse_releasedir(const char *path, struct fuse_file_info *fi)
 // happens to be a directory? ???
 int nphfuse_fsyncdir(const char *path, int datasync, struct fuse_file_info *fi)
 {
-    printf("[%s]: path:%s, datasync:%d\n", __func__, path, datasync);
     return 0;
 }
 
 int nphfuse_access(const char *path, int mask)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
+    char fp[PATH_MAX];
+    int retstat = 0;
 
-    GetFullPath(path, fullPath);
-    retVal = access(fullPath, mask);
+    GetFullPath(path, fp);
+    retstat = access(fp, mask);
 
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s, mask:%x\n", __func__, path, mask);
-#endif
+    return retstat;
 }
 
 /**
@@ -688,8 +681,10 @@ int nphfuse_access(const char *path, int mask)
  */
 int nphfuse_ftruncate(const char *path, off_t offset, struct fuse_file_info *fi)
 {
-    printf("[%s]: path:%s, offset:%ld\n", __func__, path, offset);
-    return 0;
+    int retstat = 0;
+    retstat = ftruncate(fi->fh, offset);
+
+    return retstat;
 }
 
 /**
@@ -705,12 +700,13 @@ int nphfuse_ftruncate(const char *path, off_t offset, struct fuse_file_info *fi)
  */
 int nphfuse_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_info *fi)
 {
-    int retVal = 0;
+    int retstat = 0;
 
     if (!strcmp(path, "/"))
         return nphfuse_getattr(path, statbuf);
 
-    return (fstat(fi->fh, statbuf));
+    retstat = (fstat(fi->fh, statbuf));
+    return retstat;
 }
 
 void *nphfuse_init(struct fuse_conn_info *conn)
