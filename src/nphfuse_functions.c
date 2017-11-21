@@ -352,20 +352,34 @@ int nphfuse_open(const char *path, struct fuse_file_info *fi)
 {
     char fullPath[PATH_MAX];
     int retVal = 0;
-
-    if ((fi->flags & O_ACCMODE) != O_RDONLY)
-        return -EACCES;
+    int fd = 0;
 
     GetFullPath(path, fullPath);
-    fi->fh = open(fullPath, fi->flags);
-    if (fi->fh < 0)
-        return -EACCES; /* TODO: Change return value */
+    fd = open(fullPath, fi->flags);
+    if (fd < 0)
+    {
+        return fd;
+    }
+    fi->fh = fd;
 
-    return 0;
-#if 0
-    printf ("[%s]: path:%s\n", __func__, path);
-    return 0;
-#endif
+    if (IsRegFile (fullPath) == false)
+    {
+        return 0;
+    }
+
+    /* TODO: NPHeap code required */
+    /* Read file contents. If file does not contain object id
+     * then allocate object id and write into file */
+    tFileData fileData;
+    memset (&fileData, 0, sizeof(fileData));
+    if (pread (fi->fh, &fileData, sizeof(fileData), 0) <= 0)
+    {
+        fileData.offset = gFreeOffset++;
+        printf ("[%s]: File empty..Writing offset:%llu into the file\n", __func__, fileData.offset);
+        pwrite (fi->fh, &fileData, sizeof(fileData), 0);
+    }
+
+    close (fi->fh);
 }
 
 /** Read data from an open file
@@ -393,10 +407,6 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
     retVal = pread(fi->fh, buf, size, offset);
 
     return retVal;
-#if 0
-    printf ("[%s]: path:%s, buf:%s, size:%lu, offset:%ld\n", __func__, path, buf, size, offset);
-    return 0;
-#endif
 }
 
 /** Write data to an open file
@@ -493,10 +503,6 @@ int nphfuse_release(const char *path, struct fuse_file_info *fi)
     retVal = close(fi->fh);
 
     return retVal;
-#if 0
-    printf ("[%s]: path:%s\n", __func__, path);
-    return 0;
-#endif
 }
 
 /** Synchronize file contents
@@ -521,47 +527,36 @@ int nphfuse_setxattr(const char *path, const char *name, const char *value, size
 
     GetFullPath(path, fullPath);
     return (lsetxattr(fullPath, name, value, size, flags));
-#if 0
-    printf ("[%s]: path:%s, name:%s, value:%s, size:%llu, flags:%x\n", __func__, path, name, value, size, flags);
-    return 0;
-#endif
 }
 
 /** Get extended attributes */
 int nphfuse_getxattr(const char *path, const char *name, char *value, size_t size)
 {
-    char fullPath[PATH_MAX];
+    char fp[PATH_MAX];
     int retVal = 0;
 
     GetFullPath(path, fullPath);
-    return (lgetxattr(fullPath, name, value, size));
-#if 0
-    printf ("[%s]: path:%s, name:%s, value:%s, size:%llu\n", __func__, path, name, value, size);
-    return 0;
-#endif
+    retVal= (lgetxattr(fullPath, name, value, size));
+    return retVal;
 }
 
 /** List extended attributes */
 int nphfuse_listxattr(const char *path, char *list, size_t size)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
+    char fp[PATH_MAX];
 
-    GetFullPath(path, fullPath);
-    return;
-#if 0
-    printf ("[%s]: path:%s, list:%s, size:%llu\n", __func__, path, list, size);
-    return 0;
-#endif
+    GetFullPath(path, fp);
+    return (llistxattr(fp, list, size));
 }
 
 /** Remove extended attributes */
 int nphfuse_removexattr(const char *path, const char *name)
 {
-    printf("[%s]: path:%s, name:%s\n", __func__, path, name);
-    return 0;
+    char fp[PATH_MAX];
+
+    GetFullPath(path, fp);
+    return (lremovexattr(fp, name));
 }
-#endif
 
 /** Open directory
  *
@@ -572,20 +567,16 @@ int nphfuse_removexattr(const char *path, const char *name)
  */
 int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
 {
-    char fullPath[PATH_MAX];
+    char fp[PATH_MAX];
     DIR *dir = NULL;
 
-    GetFullPath(path, fullPath);
-    dir = opendir(fullPath);
+    GetFullPath(path, fp);
+    dir = opendir(fp);
     fi->fh = (intptr_t)dir;
     if (!dir)
         return -EACCES; /* TODO: Change this error code */
 
     return 0;
-#if 0
-    printf ("[%s]: path:%s\n", __func__, path);
-    return 0;
-#endif
 }
 
 /** Read directory
