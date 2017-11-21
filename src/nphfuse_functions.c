@@ -415,7 +415,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
     GetFullPath(path, fullPath);
     retVal = pwrite(fi->fh, buf, size, offset);
 
-    return 0;
+    return retVal;
 }
 
 /** Get file system statistics
@@ -705,8 +705,12 @@ int nphfuse_ftruncate(const char *path, off_t offset, struct fuse_file_info *fi)
  */
 int nphfuse_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_info *fi)
 {
-    printf("[%s]: path:%s\n", __func__, path);
-    return 0;
+    int retVal = 0;
+
+    if (!strcmp(path, "/"))
+        return nphfuse_getattr(path, statbuf);
+
+    return (fstat(fi->fh, statbuf));
 }
 
 void *nphfuse_init(struct fuse_conn_info *conn)
