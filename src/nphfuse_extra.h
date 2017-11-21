@@ -26,12 +26,12 @@
 #define BLOCK_CAPACITY 8192
 #define DIR_MAX 64
 
-typdef struct {
+typdef struct i_node{
 	struct  stat fstat;
 	char 		 file_name[FILE_MAX];
   char		 dir_name[FILE_MAX];
-  int    offset;
-	long int		 pad;	
+  uint64_t offset;
+  long int		 pad;	
 } i_node;
 
 #define INODE_NUM (BLOCK_CAPACITY/sizeof(i_node))
