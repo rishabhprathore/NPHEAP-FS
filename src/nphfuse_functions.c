@@ -20,21 +20,62 @@
 #include "nphfuse.h"
 #include <npheap.h>
 
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
-char *GetFileName(char *str_tmp)
+char *path_name(char *fullpath)
 {
-    const char s[] = "/";
-    char *token;
-    char *last;
-    char *str = strdup(str_tmp);
-    last = token = strtok(str, s);
 
-    while ((token = strtok(NULL, s)) != NULL)
+    char *temp = NULL, *path = NULL;
+    for (temp = (fullpath + strlen(fullpath)); temp >= fullpath; temp--)
     {
-        last = token;
+        if (*temp == '/' || *temp == '\\')
+        {
+            break;
+        }
     }
 
-    return (last);
+    if (temp > fullpath)
+    {
+        path = malloc(temp - fullpath + 1);
+        strncpy(path, fullpath, (temp - fullpath));
+        path[temp - fullpath] = '\0';
+    }
+    else if (temp == fullpath)
+    {
+        path = "/";
+    }
+    else
+    {
+        path = NULL;
+    }
+    return path;
+}
+
+char *file_name(char *fullpath)
+{
+
+    char *temp = NULL, *file = NULL;
+    for (temp = (fullpath + strlen(fullpath)); temp >= fullpath; temp--)
+    {
+        if (*temp == '/' || *temp == '\\')
+        {
+            break;
+        }
+    }
+
+    if (temp >= fullpath)
+    {
+        file = malloc(strlen(temp));
+        strcpy(file, temp + 1);
+    }
+    else
+    {
+        file = malloc(strlen(fullpath) + 1);
+        strcpy(file, fullpath);
+    }
+    return file;
 }
 
 void GetFullPath(const char *path, char *fp)
@@ -374,7 +415,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
     GetFullPath(path, fullPath);
     retVal = pwrite(fi->fh, buf, size, offset);
 
-    return retVal;
+    return 0;
 }
 
 /** Get file system statistics
@@ -425,7 +466,7 @@ int nphfuse_flush(const char *path, struct fuse_file_info *fi)
     // no need to get fpath on this one, since I work from fi->fh not the path
     log_fi(fi);
 
-    printf("[%s]: path:%s\n", __func__, path);
+    
     return 0;
 }
 
