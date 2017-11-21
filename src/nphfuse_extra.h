@@ -26,7 +26,7 @@
 #define BLOCK_CAPACITY 8192
 #define DIR_MAX 64
 
-typdef struct i_node{
+typdef struct {
 	struct  stat fstat;
 	char 		 file_name[FILE_MAX];
   char		 dir_name[FILE_MAX];
