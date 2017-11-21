@@ -520,8 +520,8 @@ int nphfuse_getxattr(const char *path, const char *name, char *value, size_t siz
     char fp[PATH_MAX];
     int retVal = 0;
 
-    GetFullPath(path, fullPath);
-    retVal= (lgetxattr(fullPath, name, value, size));
+    GetFullPath(path, fp);
+    retVal= (lgetxattr(fp, name, value, size));
     return retVal;
 }
 
