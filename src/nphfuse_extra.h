@@ -10,29 +10,31 @@
 
 #include <sys/stat.h>
 
-#define SUPER_BLOCK_SIZE 1
-#define SUPER_BLOCK_MIN 0
-#define SUPER_BLOCK_MAX (SUPER_BLOCK_MIN+SUPER_BLOCK_SIZE)
+#define SUPER_BLOCK_COUNT 1
+#define SUPER_BLOCK_START 0
+#define SUPER_BLOCK_END 1
 
-#define INODE_BLOCK_SIZE 10
-#define INODE_BLOCK_MIN (SUPER_BLOCK_MAX+1)
-#define INODE_BLOCK_MAX (INODE_BLOCK_MIN+INODE_BLOCK_SIZE)
+#define INODE_BLOCK_COUNT 50
+#define INODE_BLOCK_START 1
+#define INODE_BLOCK_END 51
 
-#define DATA_BLOCK_SIZE 16000
-#define DATA_BLOCK_MIN (INODE_BLOCK_MAX+1)
-#define DATA_BLOCK_MAX (DATA_BLOCK_MIN+DATA_BLOCK_SIZE)
+#define DATA_BLOCK_COUNT 10000
+#define DATA_BLOCK_START 51
+#define DATA_BLOCK_END 10051
 
-#define MAX_NAME 50
-#define DATA_BLOCK_SIZE 8192
+#define FILE_MAX 32
+#define BLOCK_CAPACITY 8192
+#define DIR_MAX 64
 
 typdef struct {
 	struct  stat fstat;
-	char 		 fileName[MAX_NAME];
-	char		 dirName[MAX_NAME];
-	char		 pad[2];	
-} tInodeInfo;
+	char 		 file_name[FILE_MAX];
+  char		 dir_name[FILE_MAX];
+  int    offset;
+	int		 pad;	
+} i_node;
 
-#define BLOCK_ENTRIES_NUM (BLOCK_SIZE/sizeof(tInodeInfo))
+#define INODE_NUM (BLOCK_CAPACITY/sizeof(i_node))
 
 
 struct nphfuse_state {
