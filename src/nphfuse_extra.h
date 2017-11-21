@@ -31,7 +31,7 @@ typdef struct {
 	char 		 file_name[FILE_MAX];
   char		 dir_name[FILE_MAX];
   int    offset;
-	int		 pad;	
+	long int		 pad;	
 } i_node;
 
 #define INODE_NUM (BLOCK_CAPACITY/sizeof(i_node))

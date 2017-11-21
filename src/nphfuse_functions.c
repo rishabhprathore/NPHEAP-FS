@@ -20,6 +20,14 @@
 #include "nphfuse.h"
 #include <npheap.h>
 
+#include <stdint.h>
+#include <stdbool.h>
+#include <sys/time.h>
+
+int npheap_fd = 0;
+uint64_t inode_num = 2;
+uint64_t data_offset = DATA_BLOCK_START;
+
 ///////////////////////////////////////////////////////////
 //
 // Prototypes for all these functions, and the C-style comments,
@@ -70,19 +78,176 @@ void path_name(char *fullpath) {
 		}
 	}
 	free(local_pathname);
-}	
+}
 
-int main() {
+static tInodeInfo *GetRootInodeInfo(void)
+{
+    tInodeInfo *pInodeInfo = NULL;
 
-	char* path_full = "/dev/npheap/abc/def/ghi";
-	path_name(path_full);
-	return 0;
+    pInodeInfo = (tInodeInfo *)npheap_alloc(npHeapFd, INODE_BLOCK_MIN,
+                                            npheap_getsize(npHeapFd, INODE_BLOCK_MIN));
+    if (!pInodeInfo)
+    {
+        printf("Root directory inode info not found!!\n");
+        return NULL;
+    }
+
+    return &pInodeInfo[0];
+}
+/* Private Functions */
+int GetDirFileName(const char *path, char *dir, char *file)
+{
+    char *string = NULL;
+    char *ptr = NULL;
+    char *prev = NULL;
+
+    if (!path || !dir || !file)
+    {
+        return FAILURE;
+    }
+    memset(dir, 0, MAX_DIR_PATH);
+    memset(file, 0, MAX_FILE_NAME);
+
+    if (!strcmp(path, ROOT_DIR))
+    {
+        strcpy(dir, "/");
+        strcpy(file, "/");
+        printf("[%s]: dir:%s, file:%s\n", __func__, dir, file);
+        return SUCCESS;
+    }
+
+    string = strdup(path);
+    if (!string)
+    {
+        printf("failed to allocate memory to string\n");
+        return FAILURE;
+    }
+
+    ptr = strtok(string, "/");
+    if (!ptr)
+    {
+        free(string);
+        return FAILURE;
+    }
+
+    prev = ptr;
+    while ((ptr = strtok(NULL, "/")) != NULL)
+    {
+        strncat(dir, "/", MAX_DIR_PATH);
+        strncat(dir, prev, MAX_DIR_PATH);
+        prev = ptr;
+    }
+
+    if (dir[0] == '\0')
+    {
+        strcpy(dir, "/");
+    }
+    strncpy(file, prev, MAX_FILE_NAME);
+
+    printf("[%s]: dir:%s, file:%s\n", __func__, dir, file);
+    free(string);
+    return SUCCESS;
+}
+
+static i_node *get_inode(const char *path){
+    i_node *inode_data = NULL;
+    char dir_name[64];
+    char file_name[32];
+    __u64 offset = 0;
+    __u8 index = 0;
+
+    if (strcmp(path, "/")==0) return &(i_node *)npheap_alloc(npheap_fd, 1, 8192)[0];
+
+    if (GetDirFileName(path, dirName, fileName) != SUCCESS){
+        return NULL;
+    }
+
+    for (offset = 1; offset < 51; offset++)
+    {
+        inode_data = (i_node *)npheap_alloc(npheap_fd, offset,8192);
+        if (inode_data==0){
+            printf("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
+            return NULL;}
+
+        for (i = 0; i < 32; i++){
+            if ((strcmp(inode_data[index].dir_name, dirName)==0) &&
+                (strcmp(pInodeInfo[index].fileName, file_name)==0))
+            {
+                /* Entry found in inode block */
+                return &inode_data[i];
+            }
+        }
+    }
+
+    return NULL;
+}
+
+bool CheckInodeAccess(tInodeInfo *pInodeInfo, int mode)
+{
+    if (!pInodeInfo)
+        return false;
+
+    if ((getuid() == 0) || (getgid() == 0) ||
+        (pInodeInfo->fstat.st_uid == getuid()) ||
+        (pInodeInfo->fstat.st_gid == getgid()))
+    {
+        /* TODO: Compare modes?? */
+        printf("[%s]: pInodeInfo->fstat.st_mode:0x%x, mode:0x%x\n",
+               __func__, pInodeInfo->fstat.st_mode, mode);
+        return true;
+    }
+
+    return false;
+}
+
+static void NPHeapBlockInit(void)
+{
+    long int offset = 0;
+    uint8_t *block_data = NULL;
+    i_node *inode_data = NULL;
+    inode *root_inode = NULL;
+
+    npheap_fd = open(nphfuse_state->device_name, O_RDWR);
+    // allocate offset 0 in npheap for superblock
+    if(npheap_getsize(npheap_fd, 0) == 0){
+            block_data = npheap_alloc(npheap_fd, 0, 8192);
+            if(block_data==NULL){
+                printf("Failed to allocate npheap memory to offset: 0");
+                return;
+            }
+            memset(block_data, 0, npheap_getsize(npheap_fd, 0));
+        }
+
+    for(offset = INODE_BLOCK_START; offset < INODE_BLOCK_END; offset++){
+        if (npheap_getsize(npheap_fd, offset) == 0){
+            block_data = npheap_alloc(npheap_fd, offset, 8192);
+            memset(block_data, 0, npheap_getsize(npheap_fd, offset));
+        }
+    }
+    //get info of root directory inode
+
+    root_inode = &(i_node *)npheap_alloc(npheap_fd, 1,8192)[0];
+
+    strcpy(root_inode->dir_name, "/");
+    strcpy(pInodeInfo->file_name, "/");
+    root_inode->fstat.st_ino = inode_num++;
+    root_inode->fstat.st_mode = S_IFDIR | 0755;
+    root_inode->fstat.st_nlink = 2;
+    root_inode->fstat.st_size = npheap_getsize(npheap_fd, 1);
+    root_inode->fstat.st_uid = getuid();
+    root_inode->fstat.st_gid = getgid();
+    return;
 }
 
 
 int nphfuse_getattr(const char *path, struct stat *stbuf)
 {
-    return -ENOENT;
+    i_node* inode_data = NULL;
+    inode_data = get_inode(path);
+    if (inode_data==NULL)
+        return -ENOENT;
+    memcpy(stbuf, &inode_data->fstat, sizeof(struct stat));
+    return 0;
     
 }
 
