@@ -20,77 +20,6 @@
 #include "nphfuse.h"
 #include <npheap.h>
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-
-char *path_name(char *fullpath)
-{
-
-    char *temp = NULL, *path = NULL;
-    for (temp = (fullpath + strlen(fullpath)); temp >= fullpath; temp--)
-    {
-        if (*temp == '/' || *temp == '\\')
-        {
-            break;
-        }
-    }
-
-    if (temp > fullpath)
-    {
-        path = malloc(temp - fullpath + 1);
-        strncpy(path, fullpath, (temp - fullpath));
-        path[temp - fullpath] = '\0';
-    }
-    else if (temp == fullpath)
-    {
-        path = "/";
-    }
-    else
-    {
-        path = NULL;
-    }
-    return path;
-}
-
-char *file_name(char *fullpath)
-{
-
-    char *temp = NULL, *file = NULL;
-    for (temp = (fullpath + strlen(fullpath)); temp >= fullpath; temp--)
-    {
-        if (*temp == '/' || *temp == '\\')
-        {
-            break;
-        }
-    }
-
-    if (temp >= fullpath)
-    {
-        file = malloc(strlen(temp));
-        strcpy(file, temp + 1);
-    }
-    else
-    {
-        file = malloc(strlen(fullpath) + 1);
-        strcpy(file, fullpath);
-    }
-    return file;
-}
-
-void GetFullPath(const char *path, char *fp)
-{
-    char *fileName = NULL;
-    memset(fp, 0, PATH_MAX);
-    strcpy(fp, "/tmp/npheap");
-    if (strcmp(path, "/"))
-    {
-        strcat(fp, path);
-    }
-    printf("[%s]: path:%s, fullPath:%s\n", __func__, path, fp);
-    return;
-}
-
 ///////////////////////////////////////////////////////////
 //
 // Prototypes for all these functions, and the C-style comments,
@@ -102,22 +31,59 @@ void GetFullPath(const char *path, char *fp)
  * ignored.  The 'st_ino' field is ignored except if the 'use_ino'
  * mount option is given.
  */
+#include <libgen.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+
+void split_func(char *local_pathname) {
+
+	char* ts1 = strdup(local_pathname);
+	char* ts2 = strdup(local_pathname);
+	char* dir = dirname(ts1);
+	char* filename = basename(ts2);
+//call your funtion here in the place of the three lines below
+	printf("\nDIRECTORY: %s", dir);
+	printf("\nFILENAME: %s", filename);
+	printf("\n-------------**-------------");
+	return;
+}
+
+void path_name(char *fullpath) {
+
+	char *pos = NULL;
+	char *temp = NULL;
+	char *local_pathname = NULL;
+	printf("\nfullpath passed as INPUT is: %s\n", fullpath);
+	for (temp = fullpath; temp <= fullpath + strlen(fullpath); temp++) {
+		if(*temp == '/') {
+			for (pos = temp+1 ;pos <= fullpath + strlen(fullpath); pos++) {
+				if (*pos == '/' || *pos == '\0') {
+					local_pathname = malloc(pos - fullpath + 1);
+					strncpy(local_pathname, fullpath, pos - fullpath);
+        			local_pathname[pos - fullpath] = '\0';
+        			split_func(local_pathname);
+        			break;
+				}		
+			}
+		}
+	}
+	free(local_pathname);
+}	
+
+int main() {
+
+	char* path_full = "/dev/npheap/abc/def/ghi";
+	path_name(path_full);
+	return 0;
+}
+
+
 int nphfuse_getattr(const char *path, struct stat *stbuf)
 {
-    char fp[PATH_MAX];
-    int retVal = 0;
-    static int first = 0;
-    GetFullPath(path, fp);
-    if (first == 0)
-    {
-        system("mkdir /tmp/npheap");
-        first = 1;
-    }
-    retVal = lstat(fp, stbuf);
-    if(retVal == -1){
-        return -ENOENT;
-    }
-    return retVal;
+    return -ENOENT;
+    
 }
 
 /** Read the target of a symbolic link
@@ -134,90 +100,35 @@ int nphfuse_getattr(const char *path, struct stat *stbuf)
 // nphfuse_readlink() code by Bernardo F Costa (thanks!)
 int nphfuse_readlink(const char *path, char *link, size_t size)
 {
-    char fp[PATH_MAX];
-    int retstat;
-
-    GetFullPath(path, fp);
-    retstat = readlink(fp, link, size - 1);
-    if (retstat >= 0)
-    {
-        link[retstat] = '\0';
-        retstat = 0;
-    }
-
-    return retstat;
+    return -1;
 }
 
-    /** Create a file node
+/** Create a file node
  *
  * There is no create() operation, mknod() will be called for
  * creation of all non-directory, non-symlink nodes.
  */
 int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
 {
-    char fp[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fp);
-
-    if (S_ISREG(mode))
-    {
-        retVal = open(fp, O_CREAT | O_EXCL | O_WRONLY, mode);
-        if (retVal >= 0)
-            retVal = close(retVal);
-    }
-    else if (S_ISFIFO(mode))
-    {
-        retVal = mkfifo(fp, mode);
-    }
-    else
-    {
-        retVal = mknod(fp, mode, dev);
-    }
-
-    return retVal;
+    return -ENOENT;
 }
 
 /** Create a directory */
 int nphfuse_mkdir(const char *path, mode_t mode)
 {
-    char fpath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fpath);
-    retVal = mkdir(fpath, mode);
-
-    return retVal;
+    return -ENOENT;
 }
 
 /** Remove a file */
 int nphfuse_unlink(const char *path)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fullPath);
-    retVal = unlink(fullPath);
-
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s\n", __func__, path);
-#endif
+    return -1;
 }
 
 /** Remove a directory */
 int nphfuse_rmdir(const char *path)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fullPath);
-    retVal = rmdir(fullPath);
-
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s\n", __func__, path);
-#endif
+    return -1;
 }
 
 /** Create a symbolic link */
@@ -227,115 +138,44 @@ int nphfuse_rmdir(const char *path)
 // unaltered, but insert the link into the mounted directory.
 int nphfuse_symlink(const char *path, const char *link)
 {
-    char linkFullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(link, linkFullPath);
-    retVal = symlink(path, linkFullPath);
-
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s, link:%s\n", __func__, path, link);
-#endif
+    return -1;
 }
 
 /** Rename a file */
 // both path and newpath are fs-relative
 int nphfuse_rename(const char *path, const char *newpath)
 {
-    char fullPath[PATH_MAX];
-    char newFullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fullPath);
-    GetFullPath(newpath, newFullPath);
-    retVal = rename(fullPath, newFullPath);
-
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s, newpath:%s\n", __func__, path, newpath);
-    return 0;
-#endif
+    return -1;
 }
 
 /** Create a hard link to a file */
 int nphfuse_link(const char *path, const char *newpath)
 {
-    char fullPath[PATH_MAX];
-    char fullNewPath[PATH_MAX];
-
-    GetFullPath(path, fullPath);
-    GetFullPath(newpath, fullNewPath);
-
-    return (link(fullPath, fullNewPath));
-#if 0
-    printf ("[%s]: path:%s, newpath:%s\n", __func__, path, newpath);
-    return 0;
-#endif
+    return -1;
 }
 
 /** Change the permission bits of a file */
 int nphfuse_chmod(const char *path, mode_t mode)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fullPath);
-    retVal = chmod(fullPath, mode);
-
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s, mode:%x\n", __func__, path, mode);
-    return 0;
-#endif
+        return -ENOENT;
 }
 
 /** Change the owner and group of a file */
 int nphfuse_chown(const char *path, uid_t uid, gid_t gid)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fullPath);
-    retVal = chown(fullPath, uid, gid);
-
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s, uid:%u, gid:%u\n", __func__, path, uid, gid);
-    return 0;
-#endif
+        return -ENOENT;
 }
 
 /** Change the size of a file */
 int nphfuse_truncate(const char *path, off_t newsize)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fullPath);
-    retVal = truncate(fullPath, newsize);
-
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s, newsize:%ld\n", __func__, path, newsize);
-    return 0;
-#endif
+        return -ENOENT;
 }
 
 /** Change the access and/or modification times of a file */
 int nphfuse_utime(const char *path, struct utimbuf *ubuf)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fullPath);
-    retVal = utime(fullPath, ubuf);
-
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s\n", __func__, path);
-    return 0;
-#endif
+        return -ENOENT;
 }
 
 /** File open operation
@@ -350,22 +190,11 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
  */
 int nphfuse_open(const char *path, struct fuse_file_info *fi)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-
     if ((fi->flags & O_ACCMODE) != O_RDONLY)
         return -EACCES;
 
-    GetFullPath(path, fullPath);
-    fi->fh = open(fullPath, fi->flags);
-    if (fi->fh < 0)
-        return -EACCES; /* TODO: Change return value */
+    return -ENOENT;
 
-    return 0;
-#if 0
-    printf ("[%s]: path:%s\n", __func__, path);
-    return 0;
-#endif
 }
 
 /** Read data from an open file
@@ -386,17 +215,7 @@ int nphfuse_open(const char *path, struct fuse_file_info *fi)
 // returned by read.
 int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fullPath);
-    retVal = pread(fi->fh, buf, size, offset);
-
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s, buf:%s, size:%lu, offset:%ld\n", __func__, path, buf, size, offset);
-    return 0;
-#endif
+    return -ENOENT;
 }
 
 /** Write data to an open file
@@ -407,15 +226,9 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
  *
  */
 int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
-                  struct fuse_file_info *fi)
+	     struct fuse_file_info *fi)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fullPath);
-    retVal = pwrite(fi->fh, buf, size, offset);
-
-    return retVal;
+    return -ENOENT;
 }
 
 /** Get file system statistics
@@ -427,12 +240,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
  */
 int nphfuse_statfs(const char *path, struct statvfs *statv)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fullPath);
-    retVal = statvfs(fullPath, statv);
-    return retVal;
+    return -1;
 }
 
 /** Possibly flush cached data
@@ -465,8 +273,7 @@ int nphfuse_flush(const char *path, struct fuse_file_info *fi)
     log_msg("\nnphfuse_flush(path=\"%s\", fi=0x%08x)\n", path, fi);
     // no need to get fpath on this one, since I work from fi->fh not the path
     log_fi(fi);
-
-    
+	
     return 0;
 }
 
@@ -486,17 +293,7 @@ int nphfuse_flush(const char *path, struct fuse_file_info *fi)
  */
 int nphfuse_release(const char *path, struct fuse_file_info *fi)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fullPath);
-    retVal = close(fi->fh);
-
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s\n", __func__, path);
     return 0;
-#endif
 }
 
 /** Synchronize file contents
@@ -508,58 +305,32 @@ int nphfuse_release(const char *path, struct fuse_file_info *fi)
  */
 int nphfuse_fsync(const char *path, int datasync, struct fuse_file_info *fi)
 {
-    printf("[%s]: path:%s, datasync:%d\n", __func__, path, datasync);
-    return 0;
+    return -1;
 }
 
 #ifdef HAVE_SYS_XATTR_H
 /** Set extended attributes */
 int nphfuse_setxattr(const char *path, const char *name, const char *value, size_t size, int flags)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fullPath);
-    return (lsetxattr(fullPath, name, value, size, flags));
-#if 0
-    printf ("[%s]: path:%s, name:%s, value:%s, size:%llu, flags:%x\n", __func__, path, name, value, size, flags);
-    return 0;
-#endif
+    return -61;
 }
 
 /** Get extended attributes */
 int nphfuse_getxattr(const char *path, const char *name, char *value, size_t size)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fullPath);
-    return (lgetxattr(fullPath, name, value, size));
-#if 0
-    printf ("[%s]: path:%s, name:%s, value:%s, size:%llu\n", __func__, path, name, value, size);
-    return 0;
-#endif
+    return -61;
 }
 
 /** List extended attributes */
 int nphfuse_listxattr(const char *path, char *list, size_t size)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-
-    GetFullPath(path, fullPath);
-    return;
-#if 0
-    printf ("[%s]: path:%s, list:%s, size:%llu\n", __func__, path, list, size);
-    return 0;
-#endif
+    return -61;
 }
 
 /** Remove extended attributes */
 int nphfuse_removexattr(const char *path, const char *name)
 {
-    printf("[%s]: path:%s, name:%s\n", __func__, path, name);
-    return 0;
+    return -61;
 }
 #endif
 
@@ -572,20 +343,7 @@ int nphfuse_removexattr(const char *path, const char *name)
  */
 int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
 {
-    char fullPath[PATH_MAX];
-    DIR *dir = NULL;
-
-    GetFullPath(path, fullPath);
-    dir = opendir(fullPath);
-    fi->fh = (intptr_t)dir;
-    if (!dir)
-        return -EACCES; /* TODO: Change this error code */
-
-    return 0;
-#if 0
-    printf ("[%s]: path:%s\n", __func__, path);
-    return 0;
-#endif
+    return -ENOENT;
 }
 
 /** Read directory
@@ -611,34 +369,15 @@ int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
  */
 
 int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset,
-                    struct fuse_file_info *fi)
+	       struct fuse_file_info *fi)
 {
-    char fp[PATH_MAX];
-    int retstat =0;
-    DIR *dp;
-    struct dirent *de;
-
-    GetFullPath(path, fp);
-    dp = (DIR *)(uintptr_t)fi->fh;
-    de = readdir(dp);
-    if (!de)
-        return -EACCES; /* TODO: Change this error code */
-
-    do
-    {
-        if (filler(buf, de->d_name, NULL, 0) != 0)
-            return -ENOMEM;
-
-    } while ((de = readdir(dp)) != NULL);
-
-    return retstat;
+    return -ENOENT;
 }
 
 /** Release directory
  */
 int nphfuse_releasedir(const char *path, struct fuse_file_info *fi)
 {
-    closedir((DIR *)(uintptr_t)fi->fh);
     return 0;
 }
 
@@ -650,7 +389,7 @@ int nphfuse_releasedir(const char *path, struct fuse_file_info *fi)
  * Introduced in version 2.3
  */
 // when exactly is this called?  when a user calls fsync and it
-// happens to be a directory? ???
+// happens to be a directory? ??? 
 int nphfuse_fsyncdir(const char *path, int datasync, struct fuse_file_info *fi)
 {
     return 0;
@@ -658,13 +397,8 @@ int nphfuse_fsyncdir(const char *path, int datasync, struct fuse_file_info *fi)
 
 int nphfuse_access(const char *path, int mask)
 {
-    char fp[PATH_MAX];
-    int retstat = 0;
-
-    GetFullPath(path, fp);
-    retstat = access(fp, mask);
-
-    return retstat;
+    return 0;
+//    return -1;
 }
 
 /**
@@ -681,10 +415,7 @@ int nphfuse_access(const char *path, int mask)
  */
 int nphfuse_ftruncate(const char *path, off_t offset, struct fuse_file_info *fi)
 {
-    int retstat = 0;
-    retstat = ftruncate(fi->fh, offset);
-
-    return retstat;
+    return -1;
 }
 
 /**
@@ -700,13 +431,7 @@ int nphfuse_ftruncate(const char *path, off_t offset, struct fuse_file_info *fi)
  */
 int nphfuse_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_info *fi)
 {
-    int retstat = 0;
-
-    if (!strcmp(path, "/"))
-        return nphfuse_getattr(path, statbuf);
-
-    retstat = (fstat(fi->fh, statbuf));
-    return retstat;
+        return -ENOENT;
 }
 
 void *nphfuse_init(struct fuse_conn_info *conn)
@@ -714,7 +439,7 @@ void *nphfuse_init(struct fuse_conn_info *conn)
     log_msg("\nnphfuse_init()\n");
     log_conn(conn);
     log_fuse_context(fuse_get_context());
-
+        
     return NPHFS_DATA;
 }
 
@@ -729,3 +454,5 @@ void nphfuse_destroy(void *userdata)
 {
     log_msg("\nnphfuse_destroy(userdata=0x%08x)\n", userdata);
 }
+
+
