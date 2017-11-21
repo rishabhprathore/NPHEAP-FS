@@ -350,36 +350,21 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
  */
 int nphfuse_open(const char *path, struct fuse_file_info *fi)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
-    int fd = 0;
+    int retstat = 0;
+    int fd;
+    char fpath[PATH_MAX];
 
-    GetFullPath(path, fullPath);
-    fd = open(fullPath, fi->flags);
-    if (fd < 0)
-    {
-        return fd;
-    }
+    
+    GetFullPath(fpath, path);
+
+    // if the open call succeeds, my retstat is the file descriptor,
+    // else it's -errno.  I'm making sure that in that case the saved
+    // file descriptor is exactly -1.
+    
+
     fi->fh = fd;
 
-    if (IsRegFile (fullPath) == false)
-    {
-        return 0;
-    }
-
-    /* TODO: NPHeap code required */
-    /* Read file contents. If file does not contain object id
-     * then allocate object id and write into file */
-    tFileData fileData;
-    memset (&fileData, 0, sizeof(fileData));
-    if (pread (fi->fh, &fileData, sizeof(fileData), 0) <= 0)
-    {
-        fileData.offset = gFreeOffset++;
-        printf ("[%s]: File empty..Writing offset:%llu into the file\n", __func__, fileData.offset);
-        pwrite (fi->fh, &fileData, sizeof(fileData), 0);
-    }
-
-    close (fi->fh);
+    return retstat;
 }
 
 /** Read data from an open file
