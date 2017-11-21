@@ -73,7 +73,7 @@ int nphfuse_getattr(const char *path, struct stat *stbuf)
         first = 1;
     }
     retVal = lstat(fp, stbuf);
-    if (retVal == -1){
+    if(retVal == -1){
         return -ENOENT;
     }
     return retVal;
@@ -93,66 +93,60 @@ int nphfuse_getattr(const char *path, struct stat *stbuf)
 // nphfuse_readlink() code by Bernardo F Costa (thanks!)
 int nphfuse_readlink(const char *path, char *link, size_t size)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
+    char fp[PATH_MAX];
+    int retstat;
 
-    GetFullPath(path, fullPath);
-    retVal = readlink(fullPath, link, size - 1);
-    if (retVal >= 0)
+    GetFullPath(path, fp);
+    retstat = readlink(fp, link, size - 1);
+    if (retstat >= 0)
     {
-        link[retVal] = '\0';
-        retVal = 0;
+        link[retstat] = '\0';
+        retstat = 0;
     }
 
-    return retVal;
+    return retstat;
 }
 
-/** Create a file node
+    /** Create a file node
  *
  * There is no create() operation, mknod() will be called for
  * creation of all non-directory, non-symlink nodes.
  */
 int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
 {
-    char fullPath[PATH_MAX];
+    char fp[PATH_MAX];
     int retVal = 0;
 
-    GetFullPath(path, fullPath);
+    GetFullPath(path, fp);
 
     if (S_ISREG(mode))
     {
-        retVal = open(fullPath, O_CREAT | O_EXCL | O_WRONLY, mode);
+        retVal = open(fp, O_CREAT | O_EXCL | O_WRONLY, mode);
         if (retVal >= 0)
             retVal = close(retVal);
     }
     else if (S_ISFIFO(mode))
     {
-        retVal = mkfifo(fullPath, mode);
+        retVal = mkfifo(fp, mode);
     }
     else
     {
-        retVal = mknod(fullPath, mode, dev);
+        retVal = mknod(fp, mode, dev);
     }
 
     return retVal;
-#if 0
-    printf ("[%s]: path:%s, mode:%x, dev:%lu\n", __func__, path, mode, dev);
-#endif
 }
 
 /** Create a directory */
 int nphfuse_mkdir(const char *path, mode_t mode)
 {
-    char fullPath[PATH_MAX];
+    char fpath[PATH_MAX];
     int retVal = 0;
 
-    GetFullPath(path, fullPath);
-    retVal = mkdir(fullPath, mode);
+    GetFullPath(path, fpath);
+    retVal = mkdir(fpath, mode);
 
     return retVal;
-#if 0
-    printf ("[%s]: path:%s, mode:%x\n", __func__, path, mode);
-#endif
 }
 
 /** Remove a file */
@@ -381,10 +375,6 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
     retVal = pwrite(fi->fh, buf, size, offset);
 
     return retVal;
-#if 0
-    printf ("[%s]: path:%s, buf:%s, size:%lu, offset:%ld\n", __func__, path, buf, size, offset);
-    return 0;
-#endif
 }
 
 /** Get file system statistics
@@ -396,8 +386,12 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
  */
 int nphfuse_statfs(const char *path, struct statvfs *statv)
 {
-    printf("[%s]: path:%s\n", __func__, path);
-    return 0;
+    char fullPath[PATH_MAX];
+    int retVal = 0;
+
+    GetFullPath(path, fullPath);
+    retVal = statvfs(fullPath, statv);
+    return retVal;
 }
 
 /** Possibly flush cached data
