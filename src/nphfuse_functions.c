@@ -74,6 +74,9 @@ int nphfuse_getattr(const char *path, struct stat *stbuf)
         first = 1;
     }
     retVal = lstat(fp, stbuf);
+    if (retVal == -1){
+        return -ENOENT;
+    }
     return retVal;
 }
 
