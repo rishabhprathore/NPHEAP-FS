@@ -619,8 +619,8 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
     struct dirent *de;
 
     GetFullPath(path, fp);
-    dir = (DIR *)(uintptr_t)fi->fh;
-    de = readdir(dir);
+    dp = (DIR *)(uintptr_t)fi->fh;
+    de = readdir(dp);
     if (!de)
         return -EACCES; /* TODO: Change this error code */
 
@@ -629,7 +629,7 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
         if (filler(buf, de->d_name, NULL, 0) != 0)
             return -ENOMEM;
 
-    } while ((de = readdir(dir)) != NULL);
+    } while ((de = readdir(dp)) != NULL);
 
     return retstat;
 }
