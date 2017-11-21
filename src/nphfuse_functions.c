@@ -503,7 +503,7 @@ int nphfuse_fsync(const char *path, int datasync, struct fuse_file_info *fi)
     return 0;
 }
 
-#ifdef HAVE_SYS_XATTR_H
+
 /** Set extended attributes */
 int nphfuse_setxattr(const char *path, const char *name, const char *value, size_t size, int flags)
 {
