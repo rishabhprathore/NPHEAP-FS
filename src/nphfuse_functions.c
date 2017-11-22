@@ -194,7 +194,7 @@ static void npheap_fs_init(void)
 
     npheap_fd = open(nphfuse_data->device_name, O_RDWR);
     // allocate offset 0 in npheap for superblock
-    log_msg("\nnphfuse_fs_init() called\n");
+    
     if(npheap_getsize(npheap_fd, 0) == 0){
             block_data = npheap_alloc(npheap_fd, 0, 8192);
             if(block_data==NULL){
@@ -211,7 +211,7 @@ static void npheap_fs_init(void)
         }
     }
     //get info of root directory inode
-
+    log_msg("\nnphfuse_fs_init() called\n");
     root_inode = get_root_inode();
 
     strcpy(root_inode->dir_name, "/");
