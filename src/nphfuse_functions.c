@@ -78,16 +78,13 @@ char *file_name(char *fullpath)
     return file;
 }
 
-void GetFullPath(const char *path, char *fp)
-{
-    char *fileName = NULL;
+void get_full_path(const char *path, char *fp){
+    char *file_name = NULL;
     memset(fp, 0, PATH_MAX);
     strcpy(fp, "/tmp/npheap");
-    if (strcmp(path, "/"))
-    {
+    if(strcmp(path, "/")){
         strcat(fp, path);
     }
-    printf("[%s]: path:%s, fullPath:%s\n", __func__, path, fp);
     return;
 }
 
@@ -104,15 +101,14 @@ void GetFullPath(const char *path, char *fp)
  */
 int nphfuse_getattr(const char *path, struct stat *stbuf)
 {
-    char fp[PATH_MAX];
     int ret = 0;
-    static int first = 0;
-    GetFullPath(path, fp);
-    if (first == 0)
-    {
+    char fp[PATH_MAX];
+    static int first_call = 1;
+    if (first_call == 1){
         system("mkdir /tmp/npheap");
-        first = 1;
+        first_call= 0;
     }
+    get_full_path(path, fp);
     ret = lstat(fp, stbuf);
     if(ret == -1){
         return -ENOENT;
@@ -134,18 +130,18 @@ int nphfuse_getattr(const char *path, struct stat *stbuf)
 // nphfuse_readlink() code by Bernardo F Costa (thanks!)
 int nphfuse_readlink(const char *path, char *link, size_t size)
 {
+    
+    int ret = 0;
     char fp[PATH_MAX];
-    int retstat;
 
-    GetFullPath(path, fp);
-    retstat = readlink(fp, link, size - 1);
-    if (retstat >= 0)
+    get_full_path(path, fp);
+    ret = readlink(fp, link, size - 1);
+    if (ret >= 0)
     {
-        link[retstat] = '\0';
-        retstat = 0;
+        link[ret] = '\0';
+        ret = 0;
     }
-
-    return retstat;
+    return ret;
 }
 
     /** Create a file node
@@ -156,68 +152,63 @@ int nphfuse_readlink(const char *path, char *link, size_t size)
 int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
 {
     char fp[PATH_MAX];
-    int retVal = 0;
+    int ret = 0;
 
-    GetFullPath(path, fp);
+    get_full_path(path, fp);
 
     if (S_ISREG(mode))
     {
-        retVal = open(fp, O_CREAT | O_EXCL | O_WRONLY, mode);
-        if (retVal >= 0)
-            retVal = close(retVal);
+        ret = open(fp, O_CREAT | O_EXCL | O_WRONLY, mode);
+        if (ret >= 0)
+            ret = close(ret);
     }
     else if (S_ISFIFO(mode))
     {
-        retVal = mkfifo(fp, mode);
+        ret = mkfifo(fp, mode);
     }
     else
     {
-        retVal = mknod(fp, mode, dev);
+        ret = mknod(fp, mode, dev);
     }
 
-    return retVal;
+    return ret;
 }
 
 /** Create a directory */
 int nphfuse_mkdir(const char *path, mode_t mode)
 {
     char fpath[PATH_MAX];
-    int retVal = 0;
+    int ret = 0;
 
-    GetFullPath(path, fpath);
-    retVal = mkdir(fpath, mode);
+    get_full_path(path, fpath);
+    ret = mkdir(fpath, mode);
 
-    return retVal;
+    return ret;
 }
 
 /** Remove a file */
 int nphfuse_unlink(const char *path)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
+    char fp[PATH_MAX];
+    int ret = 0;
 
-    GetFullPath(path, fullPath);
-    retVal = unlink(fullPath);
+    get_full_path(path, fp);
+    ret = unlink(fp);
 
     return retVal;
-#if 0
-    printf ("[%s]: path:%s\n", __func__, path);
-#endif
 }
 
 /** Remove a directory */
 int nphfuse_rmdir(const char *path)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
+    char fp[PATH_MAX];
+    int ret = 0;
 
-    GetFullPath(path, fullPath);
-    retVal = rmdir(fullPath);
+    get_full_path(path, fp);
+    ret = rmdir(fp);
 
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s\n", __func__, path);
-#endif
+    return ret;
+
 }
 
 /** Create a symbolic link */
@@ -227,115 +218,80 @@ int nphfuse_rmdir(const char *path)
 // unaltered, but insert the link into the mounted directory.
 int nphfuse_symlink(const char *path, const char *link)
 {
-    char linkFullPath[PATH_MAX];
-    int retVal = 0;
+    char fp[PATH_MAX];
+    int ret = 0;
 
-    GetFullPath(link, linkFullPath);
-    retVal = symlink(path, linkFullPath);
+    get_full_path(link, fp);
+    ret = symlink(path, fp);
 
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s, link:%s\n", __func__, path, link);
-#endif
+    return ret;
 }
 
 /** Rename a file */
 // both path and newpath are fs-relative
 int nphfuse_rename(const char *path, const char *newpath)
 {
-    char fullPath[PATH_MAX];
-    char newFullPath[PATH_MAX];
-    int retVal = 0;
+    char fp[PATH_MAX];
+    char nfp[PATH_MAX];
+    int ret = 0;
 
-    GetFullPath(path, fullPath);
-    GetFullPath(newpath, newFullPath);
-    retVal = rename(fullPath, newFullPath);
+    get_full_path(path, fp);
+    get_full_path(newpath, nfp);
+    ret = rename(fp, nfp);
 
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s, newpath:%s\n", __func__, path, newpath);
-    return 0;
-#endif
+    return ret;
 }
 
 /** Create a hard link to a file */
 int nphfuse_link(const char *path, const char *newpath)
 {
-    char fullPath[PATH_MAX];
-    char fullNewPath[PATH_MAX];
+    int ret = 0;
+    char fp[PATH_MAX];
+    char nfp[PATH_MAX];
 
-    GetFullPath(path, fullPath);
-    GetFullPath(newpath, fullNewPath);
+    get_full_path(path, fp);
+    get_full_path(newpath, nfp);
 
-    return (link(fullPath, fullNewPath));
-#if 0
-    printf ("[%s]: path:%s, newpath:%s\n", __func__, path, newpath);
-    return 0;
-#endif
+    ret = link(fp, nfp);
+    return ret;
 }
 
 /** Change the permission bits of a file */
 int nphfuse_chmod(const char *path, mode_t mode)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
+    char fp[PATH_MAX];
 
-    GetFullPath(path, fullPath);
-    retVal = chmod(fullPath, mode);
-
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s, mode:%x\n", __func__, path, mode);
-    return 0;
-#endif
+    get_full_path(path, fp);
+    return chmod(fp, mode);
 }
 
 /** Change the owner and group of a file */
 int nphfuse_chown(const char *path, uid_t uid, gid_t gid)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
+    char fp[PATH_MAX];
+    int ret = 0;
 
-    GetFullPath(path, fullPath);
-    retVal = chown(fullPath, uid, gid);
+    get_full_path(path, fp);
+    return chown(fp, uid, gid);
 
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s, uid:%u, gid:%u\n", __func__, path, uid, gid);
-    return 0;
-#endif
 }
 
 /** Change the size of a file */
 int nphfuse_truncate(const char *path, off_t newsize)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
+    char fp[PATH_MAX];
 
-    GetFullPath(path, fullPath);
-    retVal = truncate(fullPath, newsize);
-
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s, newsize:%ld\n", __func__, path, newsize);
-    return 0;
-#endif
+    get_full_path(path, fp);
+    return truncate(fp, newsize);
 }
 
 /** Change the access and/or modification times of a file */
 int nphfuse_utime(const char *path, struct utimbuf *ubuf)
 {
-    char fullPath[PATH_MAX];
-    int retVal = 0;
+    char fp[PATH_MAX];
 
-    GetFullPath(path, fullPath);
-    retVal = utime(fullPath, ubuf);
-
-    return retVal;
-#if 0
-    printf ("[%s]: path:%s\n", __func__, path);
-    return 0;
-#endif
+    get_full_path(path, fp);
+    return utime(fp, ubuf);
 }
 
 /** File open operation
@@ -350,19 +306,12 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
  */
 int nphfuse_open(const char *path, struct fuse_file_info *fi)
 {
-    int retstat = 0;
     int fd;
-    char fpath[PATH_MAX];
-    GetFullPath(path, fpath);
-    retstat = open(fpath, fi->flags);
-    
+    char fp[PATH_MAX];
+    get_full_path(path, fp);
+    fd = open(fp, fi->flags);    
 
-    // if the open call succeeds, my retstat is the file descriptor,
-    // else it's -errno.  I'm making sure that in that case the saved
-    // file descriptor is exactly -1.
-    
-
-    fi->fh = retstat;
+    fi->fh = fd;
 
     return 0;
 }
