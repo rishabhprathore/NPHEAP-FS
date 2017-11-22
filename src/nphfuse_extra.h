@@ -9,6 +9,7 @@
 
 
 #include <sys/stat.h>
+#include <sys/stdint.h>
 
 #define SUPER_BLOCK_COUNT 1
 #define SUPER_BLOCK_START 0
@@ -26,7 +27,7 @@
 #define BLOCK_CAPACITY 8192
 #define DIR_MAX 64
 
-typdef struct {
+typedef struct {
 	struct  stat fstat;
 	char 		 file_name[FILE_MAX];
   char		 dir_name[FILE_MAX];
