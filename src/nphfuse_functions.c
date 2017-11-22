@@ -190,12 +190,10 @@ int nphfuse_mkdir(const char *path, mode_t mode)
 int nphfuse_unlink(const char *path)
 {
     char fp[PATH_MAX];
-    int ret = 0;
 
     get_full_path(path, fp);
-    ret = unlink(fp);
+    return unlink(fp);
 
-    return retVal;
 }
 
 /** Remove a directory */
