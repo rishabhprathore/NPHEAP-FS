@@ -138,7 +138,7 @@ int GetDirFileName(const char *path, char *dir, char *file)
 static i_node *get_root_inode(void)
 {
     i_node *root_inode = NULL;
-
+    log_msg("\nget_root_inode() called 1\n %s", npheap_getsize(npheap_fd, 1));
     root_inode = (i_node *)npheap_alloc(npheap_fd, 1,npheap_getsize(npheap_fd, 1));
     if (!root_inode)
     {
