@@ -202,12 +202,15 @@ static void npheap_fs_init(void)
             }
             memset(block_data, 0, npheap_getsize(npheap_fd, 0));
         }
-    printf("check");
-    for(offset = 1; offset < 51; offset++){
-        if (npheap_getsize(npheap_fd, offset) == 0){
-            block_data = npheap_alloc(npheap_fd, offset, 8192);
-            memset(block_data, 0, npheap_getsize(npheap_fd, offset));
-        }
+        log_msg("\n Superblock size %d\n", npheap_getsize(npheap_fd, 0));
+        printf("check");
+        for (offset = 1; offset < 51; offset++)
+        {
+            if (npheap_getsize(npheap_fd, offset) == 0)
+            {
+                block_data = npheap_alloc(npheap_fd, offset, 8192);
+                memset(block_data, 0, npheap_getsize(npheap_fd, offset));
+            }
     }
     //get info of root directory inode
     
