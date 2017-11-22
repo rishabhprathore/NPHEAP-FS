@@ -105,7 +105,7 @@ void GetFullPath(const char *path, char *fp)
 int nphfuse_getattr(const char *path, struct stat *stbuf)
 {
     char fp[PATH_MAX];
-    int retVal = 0;
+    int ret = 0;
     static int first = 0;
     GetFullPath(path, fp);
     if (first == 0)
@@ -113,11 +113,11 @@ int nphfuse_getattr(const char *path, struct stat *stbuf)
         system("mkdir /tmp/npheap");
         first = 1;
     }
-    retVal = lstat(fp, stbuf);
-    if(retVal == -1){
+    ret = lstat(fp, stbuf);
+    if(ret == -1){
         return -ENOENT;
     }
-    return retVal;
+    return ret;
 }
 
 /** Read the target of a symbolic link
