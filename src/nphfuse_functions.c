@@ -145,11 +145,6 @@ int nphfuse_readlink(const char *path, char *link, size_t size)
     return ret;
 }
 
-    /** Create a file node
- *
- * There is no create() operation, mknod() will be called for
- * creation of all non-directory, non-symlink nodes.
- */
 int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
 {
     char fp[PATH_MAX];
@@ -268,7 +263,7 @@ int nphfuse_truncate(const char *path, off_t newsize)
     return truncate(fp, newsize);
 }
 
-/** Change the access and/or modification times of a file */
+
 int nphfuse_utime(const char *path, struct utimbuf *ubuf)
 {
     char fp[PATH_MAX];
@@ -277,16 +272,7 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
     return utime(fp, ubuf);
 }
 
-/** File open operation
- *
- * No creation, or truncation flags (O_CREAT, O_EXCL, O_TRUNC)
- * will be passed to open().  Open should check if the operation
- * is permitted for the given flags.  Optionally open may also
- * return an arbitrary filehandle in the fuse_file_info structure,
- * which will be passed to all file operations.
- *
- * Changed in version 2.2
- */
+
 int nphfuse_open(const char *path, struct fuse_file_info *fi)
 {
     int fd;
@@ -383,20 +369,7 @@ int nphfuse_flush(const char *path, struct fuse_file_info *fi)
     return 0;
 }
 
-/** Release an open file
- *
- * Release is called when there are no more references to an open
- * file: all file descriptors are closed and all memory mappings
- * are unmapped.
- *
- * For every open() call there will be exactly one release() call
- * with the same flags and file descriptor.  It is possible to
- * have a file opened more than once, in which case only the last
- * release will mean, that no more reads/writes will happen on the
- * file.  The return value of release is ignored.
- *
- * Changed in version 2.2
- */
+
 int nphfuse_release(const char *path, struct fuse_file_info *fi)
 {
     char fp[PATH_MAX];
@@ -405,20 +378,14 @@ int nphfuse_release(const char *path, struct fuse_file_info *fi)
     return close(fi->fh);
 }
 
-/** Synchronize file contents
- *
- * If the datasync parameter is non-zero, then only the user data
- * should be flushed, not the meta data.
- *
- * Changed in version 2.2
- */
+
 int nphfuse_fsync(const char *path, int datasync, struct fuse_file_info *fi)
 {
     return 0;
 }
 
 
-/** Set extended attributes */
+
 int nphfuse_setxattr(const char *path, const char *name, const char *value, size_t size, int flags)
 {
     char fp[PATH_MAX];
@@ -427,7 +394,7 @@ int nphfuse_setxattr(const char *path, const char *name, const char *value, size
     return lsetxattr(fp, name, value, size, flags);
 }
 
-/** Get extended attributes */
+
 int nphfuse_getxattr(const char *path, const char *name, char *value, size_t size)
 {
     char fp[PATH_MAX];
