@@ -18,7 +18,8 @@
 */
 // code is referred from https://www.cs.nmsu.edu/~pfeiffer/fuse-tutorial/
 
-//
+// Project 3: Aasheesh Tandon, atandon; Rishabh Rathore, rrathor;
+
 #include "nphfuse.h"
 #include <npheap.h>
 
