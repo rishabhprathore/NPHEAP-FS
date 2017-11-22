@@ -94,7 +94,6 @@ char* full_path(const char *path){
 int nphfuse_getattr(const char *path, struct stat *stbuf)
 {
     int ret = 0;
-    fp = malloc(sizeof(PATH_MAX));
     static int first_call = 1;
     if (first_call == 1){
         system("mkdir /tmp/npheap");
@@ -348,9 +347,6 @@ int nphfuse_getxattr(const char *path, const char *name, char *value, size_t siz
 int nphfuse_listxattr(const char *path, char *list, size_t size)
 {
     char *fp = full_path(path);
-    char fp[PATH_MAX];
-
-    fp = full_path(path);
     return llistxattr(fp, list, size);
 }
 
