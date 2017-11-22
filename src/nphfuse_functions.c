@@ -18,6 +18,7 @@
 */
 // code is referred from https://www.cs.nmsu.edu/~pfeiffer/fuse-tutorial/
 
+//
 #include "nphfuse.h"
 #include <npheap.h>
 
@@ -347,6 +348,9 @@ int nphfuse_getxattr(const char *path, const char *name, char *value, size_t siz
 int nphfuse_listxattr(const char *path, char *list, size_t size)
 {
     char *fp = full_path(path);
+    char fp[PATH_MAX];
+
+    fp = full_path(path);
     return llistxattr(fp, list, size);
 }
 
