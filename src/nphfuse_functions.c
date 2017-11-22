@@ -79,14 +79,15 @@ char *file_name(char *fullpath)
     return file;
 }
 
-void get_full_path(const char *path, char *fp){
+char* full_path(const char *path){
+    char fp[PATH_MAX];
     char *file_name = NULL;
     memset(fp, 0, PATH_MAX);
     strcpy(fp, "/tmp/npheap");
     if(strcmp(path, "/")){
         strcat(fp, path);
     }
-    return;
+    return fp;
 }
 
 int nphfuse_getattr(const char *path, struct stat *stbuf)
@@ -98,7 +99,7 @@ int nphfuse_getattr(const char *path, struct stat *stbuf)
         system("mkdir /tmp/npheap");
         first_call= 0;
     }
-    get_full_path(path, fp);
+    fp = full_path(path);
     ret = lstat(fp, stbuf);
     if(ret == -1){
         return -ENOENT;
@@ -112,7 +113,7 @@ int nphfuse_readlink(const char *path, char *link, size_t size)
     int ret = 0;
     char fp[PATH_MAX];
 
-    get_full_path(path, fp);
+    fp = full_path(path);
     ret = readlink(fp, link, size - 1);
     if (ret >= 0)
     {
@@ -127,7 +128,7 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
     char fp[PATH_MAX];
     int ret = 0;
 
-    get_full_path(path, fp);
+    fp = full_path(path);
 
     if (S_ISREG(mode))
     {
@@ -153,7 +154,7 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     char fpath[PATH_MAX];
     int ret = 0;
 
-    get_full_path(path, fpath);
+    fpath = full_path(path);
     ret = mkdir(fpath, mode);
 
     return ret;
@@ -164,7 +165,7 @@ int nphfuse_unlink(const char *path)
 {
     char fp[PATH_MAX];
 
-    get_full_path(path, fp);
+    fp = full_path(path);
     return unlink(fp);
 
 }
@@ -174,19 +175,14 @@ int nphfuse_rmdir(const char *path)
 {
     char fp[PATH_MAX];
 
-    get_full_path(path, fp);
+    fp = full_path(path);
     return rmdir(fp);
 }
 
-/** Create a symbolic link */
-// The parameters here are a little bit confusing, but do correspond
-// to the symlink() system call.  The 'path' is where the link points,
-// while the 'link' is the link itself.  So we need to leave the path
-// unaltered, but insert the link into the mounted directory.
 int nphfuse_symlink(const char *path, const char *link)
 {
     char fp[PATH_MAX];
-    get_full_path(link, fp);
+    fp = full_path(link);
     return symlink(path, fp);
 }
 
@@ -196,8 +192,8 @@ int nphfuse_rename(const char *path, const char *newpath)
 {
     char fp[PATH_MAX];
     char nfp[PATH_MAX];
-    get_full_path(path, fp);
-    get_full_path(newpath, nfp);
+    fp = full_path(path);
+    nfp = full_path(newpath);
     return rename(fp, nfp);
 
 }
@@ -206,8 +202,8 @@ int nphfuse_rename(const char *path, const char *newpath)
 int nphfuse_link(const char *path, const char *newpath)
 {   char fp[PATH_MAX];
     char nfp[PATH_MAX];
-    get_full_path(path, fp);
-    get_full_path(newpath, nfp);
+    fp = full_path(path);
+    nfp = full_path(newpath);
     return link(fp, nfp);
 }
 
@@ -216,7 +212,7 @@ int nphfuse_chmod(const char *path, mode_t mode)
 {
     char fp[PATH_MAX];
 
-    get_full_path(path, fp);
+    fp = full_path(path);
     return chmod(fp, mode);
 }
 
@@ -224,11 +220,8 @@ int nphfuse_chmod(const char *path, mode_t mode)
 int nphfuse_chown(const char *path, uid_t uid, gid_t gid)
 {
     char fp[PATH_MAX];
-    int ret = 0;
-
-    get_full_path(path, fp);
+    fp = full_path(path);
     return chown(fp, uid, gid);
-
 }
 
 /** Change the size of a file */
@@ -236,7 +229,7 @@ int nphfuse_truncate(const char *path, off_t newsize)
 {
     char fp[PATH_MAX];
 
-    get_full_path(path, fp);
+    fp = full_path(path);
     return truncate(fp, newsize);
 }
 
@@ -245,7 +238,7 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
 {
     char fp[PATH_MAX];
 
-    get_full_path(path, fp);
+    fp = full_path(path);
     return utime(fp, ubuf);
 }
 
@@ -254,7 +247,7 @@ int nphfuse_open(const char *path, struct fuse_file_info *fi)
 {
     int fd;
     char fp[PATH_MAX];
-    get_full_path(path, fp);
+    fp = full_path(path);
     fd = open(fp, fi->flags);    
 
     fi->fh = fd;
@@ -281,7 +274,7 @@ int nphfuse_open(const char *path, struct fuse_file_info *fi)
 int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
     char fp[PATH_MAX];
-    get_full_path(path, fp);
+    fp = full_path(path);
     return pread(fi->fh, buf, size, offset);
 }
 
@@ -297,7 +290,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
 {
     char fp[PATH_MAX];
 
-    get_full_path(path, fp);
+    fp = full_path(path);
     return pwrite(fi->fh, buf, size, offset);
 
 }
@@ -312,7 +305,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
 int nphfuse_statfs(const char *path, struct statvfs *statv)
 {
     char fp[PATH_MAX];
-    get_full_path(path, fp);
+    fp = full_path(path);
     return statvfs(fp, statv);
 }
 
@@ -351,7 +344,7 @@ int nphfuse_release(const char *path, struct fuse_file_info *fi)
 {
     char fp[PATH_MAX];
 
-    get_full_path(path, fp);
+    fp = full_path(path);
     return close(fi->fh);
 }
 
@@ -367,7 +360,7 @@ int nphfuse_setxattr(const char *path, const char *name, const char *value, size
 {
     char fp[PATH_MAX];
 
-    get_full_path(path, fp);
+    fp = full_path(path);
     return lsetxattr(fp, name, value, size, flags);
 }
 
@@ -376,7 +369,7 @@ int nphfuse_getxattr(const char *path, const char *name, char *value, size_t siz
 {
     char fp[PATH_MAX];
 
-    get_full_path(path, fp);
+    fp = full_path(path);
     return lgetxattr(fp, name, value, size);
 }
 
@@ -385,7 +378,7 @@ int nphfuse_listxattr(const char *path, char *list, size_t size)
 {
     char fp[PATH_MAX];
 
-    get_full_path(path, fp);
+    fp = full_path(path);
     return llistxattr(fp, list, size);
 }
 
@@ -394,7 +387,7 @@ int nphfuse_removexattr(const char *path, const char *name)
 {
     char fp[PATH_MAX];
 
-    get_full_path(path, fp);
+    fp = full_path(path);
     return lremovexattr(fp, name);
 }
 
@@ -404,7 +397,7 @@ int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
     char fp[PATH_MAX];
     DIR *dir = NULL;
 
-    get_full_path(path, fp);
+    fp = full_path(path);
     dir = opendir(fp);
     fi->fh = (intptr_t)dir;
     if (!dir)
@@ -455,7 +448,7 @@ int nphfuse_access(const char *path, int mask)
 {
     char fp[PATH_MAX];
 
-    get_full_path(path, fp);
+    fp = full_path(path);
     return access(fp, mask);
 
 }
