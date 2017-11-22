@@ -44,6 +44,7 @@ uint64_t data_offset = DATA_BLOCK_START;
 #include <stdio.h>
 #include <stdlib.h>
 
+extern struct nphfuse_state *nphfuse_data;
 
 void split_func(char *local_pathname) {
 
@@ -172,7 +173,7 @@ static i_node *get_inode(const char *path){
 
         for (i = 0; i < 32; i++){
             if ((strcmp(inode_data[i].dir_name, dir_name)==0) &&
-                (strcmp(pInodeInfo[i].file_name, file_name)==0))
+                (strcmp(inode_data[i].file_name, file_name)==0))
             {
                 /* Entry found in inode block */
                 return &inode_data[i];
@@ -191,7 +192,7 @@ static void NPHeapBlockInit(void)
     i_node *inode_data = NULL;
     i_node *root_inode = NULL;
 
-    npheap_fd = open(nphfuse_state->device_name, O_RDWR);
+    npheap_fd = open(nphfuse_data->device_name, O_RDWR);
     // allocate offset 0 in npheap for superblock
     if(npheap_getsize(npheap_fd, 0) == 0){
             block_data = npheap_alloc(npheap_fd, 0, 8192);
