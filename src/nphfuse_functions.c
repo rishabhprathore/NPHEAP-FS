@@ -171,8 +171,8 @@ static i_node *get_inode(const char *path){
             return NULL;}
 
         for (i = 0; i < 32; i++){
-            if ((strcmp(inode_data[index].dir_name, dir_name)==0) &&
-                (strcmp(pInodeInfo[index].file_name, file_name)==0))
+            if ((strcmp(inode_data[i].dir_name, dir_name)==0) &&
+                (strcmp(pInodeInfo[i].file_name, file_name)==0))
             {
                 /* Entry found in inode block */
                 return &inode_data[i];
@@ -213,7 +213,7 @@ static void NPHeapBlockInit(void)
     root_inode = get_root_inode();
 
     strcpy(root_inode->dir_name, "/");
-    strcpy(pInodeInfo->file_name, "/");
+    strcpy(root_inode->file_name, "/");
     root_inode->fstat.st_ino = inode_num++;
     root_inode->fstat.st_mode = S_IFDIR | 0755;
     root_inode->fstat.st_nlink = 2;
