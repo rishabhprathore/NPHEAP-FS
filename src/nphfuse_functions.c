@@ -211,7 +211,7 @@ static void npheap_fs_init(void)
             if (npheap_getsize(npheap_fd, offset) == 0)
             {
                 block_data = npheap_alloc(npheap_fd, offset, 8192);
-                memset(lock_data, 0, npheap_getsize(npheap_fd, offset));
+                memset(block_data, 0, npheap_getsize(npheap_fd, offset));
             }
     }
     //get info of root directory inode
