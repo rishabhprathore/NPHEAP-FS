@@ -439,7 +439,7 @@ int nphfuse_setxattr(const char *path, const char *name, const char *value, size
     char fp[PATH_MAX];
 
     get_full_path(path, fp);
-    return (lsetxattr(fullPath, name, value, size, flags));
+    return lsetxattr(fp, name, value, size, flags);
 }
 
 /** Get extended attributes */
