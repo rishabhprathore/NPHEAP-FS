@@ -9,7 +9,7 @@
 
 
 #include <sys/stat.h>
-#include <sys/stdint.h>
+#include <stdint.h>
 
 #define SUPER_BLOCK_COUNT 1
 #define SUPER_BLOCK_START 0
