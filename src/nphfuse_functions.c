@@ -89,17 +89,6 @@ void get_full_path(const char *path, char *fp){
     return;
 }
 
-///////////////////////////////////////////////////////////
-//
-// Prototypes for all these functions, and the C-style comments,
-// come from /usr/include/fuse.h
-//
-/** Get file attributes.
- *
- * Similar to stat().  The 'st_dev' and 'st_blksize' fields are
- * ignored.  The 'st_ino' field is ignored except if the 'use_ino'
- * mount option is given.
- */
 int nphfuse_getattr(const char *path, struct stat *stbuf)
 {
     int ret = 0;
@@ -117,18 +106,6 @@ int nphfuse_getattr(const char *path, struct stat *stbuf)
     return ret;
 }
 
-/** Read the target of a symbolic link
- *
- * The buffer should be filled with a null terminated string.  The
- * buffer size argument includes the space for the terminating
- * null character.  If the linkname is too long to fit in the
- * buffer, it should be truncated.  The return value should be 0
- * for success.
- */
-// Note the system readlink() will truncate and lose the terminating
-// null.  So, the size passed to to the system readlink() must be one
-// less than the size passed to nphfuse_readlink()
-// nphfuse_readlink() code by Bernardo F Costa (thanks!)
 int nphfuse_readlink(const char *path, char *link, size_t size)
 {
     
