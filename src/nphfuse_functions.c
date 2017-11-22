@@ -454,13 +454,7 @@ int nphfuse_removexattr(const char *path, const char *name)
     return lremovexattr(fp, name);
 }
 
-/** Open directory
- *
- * This method should check if the open operation is permitted for
- * this directory
- *
- * Introduced in version 2.3
- */
+
 int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
 {
     char fp[PATH_MAX];
@@ -475,27 +469,6 @@ int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
     return 0;
 }
 
-/** Read directory
- *
- * This supersedes the old getdir() interface.  New applications
- * should use this.
- *
- * The filesystem may choose between two modes of operation:
- *
- * 1) The readdir implementation ignores the offset parameter, and
- * passes zero to the filler function's offset.  The filler
- * function will not return '1' (unless an error happens), so the
- * whole directory is read in a single readdir operation.  This
- * works just like the old getdir() method.
- *
- * 2) The readdir implementation keeps track of the offsets of the
- * directory entries.  It uses the offset parameter and always
- * passes non-zero offset to the filler function.  When the buffer
- * is full (or an error happens) the filler function will return
- * '1'.
- *
- * Introduced in version 2.3
- */
 
 int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset,
                     struct fuse_file_info *fi)
@@ -507,14 +480,13 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
     dp = (DIR *)(uintptr_t)fi->fh;
     de = readdir(dp);
     do {
-        if (filler(buf, de->d_name, NULL, 0) != 0)
+        if (filler(buf, de->d_name, NULL, 0) != 0){
             return -ENOMEM;
+        } 
     } while ((de = readdir(dp)) != NULL);
     return retstat;
 }
 
-/** Release directory
- */
 int nphfuse_releasedir(const char *path, struct fuse_file_info *fi)
 {
     closedir((DIR *)(uintptr_t)fi->fh);
