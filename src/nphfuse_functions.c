@@ -80,20 +80,6 @@ void path_name(char *fullpath) {
 	free(local_pathname);
 }
 
-static tInodeInfo *GetRootInodeInfo(void)
-{
-    tInodeInfo *pInodeInfo = NULL;
-
-    pInodeInfo = (tInodeInfo *)npheap_alloc(npHeapFd, INODE_BLOCK_MIN,
-                                            npheap_getsize(npHeapFd, INODE_BLOCK_MIN));
-    if (!pInodeInfo)
-    {
-        printf("Root directory inode info not found!!\n");
-        return NULL;
-    }
-
-    return &pInodeInfo[0];
-}
 /* Private Functions */
 int GetDirFileName(const char *path, char *dir, char *file)
 {
@@ -105,8 +91,8 @@ int GetDirFileName(const char *path, char *dir, char *file)
     {
         return FAILURE;
     }
-    memset(dir, 0, MAX_DIR_PATH);
-    memset(file, 0, MAX_FILE_NAME);
+    memset(dir, 0, 64);
+    memset(file, 0, 32);
 
     if (!strcmp(path, ROOT_DIR))
     {
@@ -133,8 +119,8 @@ int GetDirFileName(const char *path, char *dir, char *file)
     prev = ptr;
     while ((ptr = strtok(NULL, "/")) != NULL)
     {
-        strncat(dir, "/", MAX_DIR_PATH);
-        strncat(dir, prev, MAX_DIR_PATH);
+        strncat(dir, "/", 64);
+        strncat(dir, prev, 32);
         prev = ptr;
     }
 
