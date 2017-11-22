@@ -16,6 +16,7 @@
   follow later to get a gentler introduction.
 
 */
+// code is referred from https://www.cs.nmsu.edu/~pfeiffer/fuse-tutorial/
 
 #include "nphfuse.h"
 #include <npheap.h>
@@ -200,13 +201,9 @@ int nphfuse_unlink(const char *path)
 int nphfuse_rmdir(const char *path)
 {
     char fp[PATH_MAX];
-    int ret = 0;
 
     get_full_path(path, fp);
-    ret = rmdir(fp);
-
-    return ret;
-
+    return rmdir(fp);
 }
 
 /** Create a symbolic link */
@@ -217,12 +214,8 @@ int nphfuse_rmdir(const char *path)
 int nphfuse_symlink(const char *path, const char *link)
 {
     char fp[PATH_MAX];
-    int ret = 0;
-
     get_full_path(link, fp);
-    ret = symlink(path, fp);
-
-    return ret;
+    return symlink(path, fp);
 }
 
 /** Rename a file */
@@ -231,27 +224,19 @@ int nphfuse_rename(const char *path, const char *newpath)
 {
     char fp[PATH_MAX];
     char nfp[PATH_MAX];
-    int ret = 0;
-
     get_full_path(path, fp);
     get_full_path(newpath, nfp);
-    ret = rename(fp, nfp);
+    return rename(fp, nfp);
 
-    return ret;
 }
 
 /** Create a hard link to a file */
 int nphfuse_link(const char *path, const char *newpath)
-{
-    int ret = 0;
-    char fp[PATH_MAX];
+{   char fp[PATH_MAX];
     char nfp[PATH_MAX];
-
     get_full_path(path, fp);
     get_full_path(newpath, nfp);
-
-    ret = link(fp, nfp);
-    return ret;
+    return link(fp, nfp);
 }
 
 /** Change the permission bits of a file */
@@ -515,24 +500,16 @@ int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
 int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset,
                     struct fuse_file_info *fi)
 {
-    char fp[PATH_MAX];
     int retstat =0;
     DIR *dp;
     struct dirent *de;
 
-    get_full_path(path, fp);
     dp = (DIR *)(uintptr_t)fi->fh;
     de = readdir(dp);
-    if (!de)
-        return -EACCES; /* TODO: Change this error code */
-
-    do
-    {
+    do {
         if (filler(buf, de->d_name, NULL, 0) != 0)
             return -ENOMEM;
-
     } while ((de = readdir(dp)) != NULL);
-
     return retstat;
 }
 
