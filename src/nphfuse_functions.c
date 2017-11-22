@@ -154,12 +154,12 @@ static i_node *get_inode(const char *path){
     char dir_name[64];
     char file_name[32];
     __u64 offset = 0;
-    __u8 index = 0;
+    int i = 0;
 
     if (strcmp(path, "/")==0) 
         return get_root_inode();
 
-    if (GetDirFileName(path, dirName, fileName) != SUCCESS){
+    if (GetDirFileName(path, dir_name, file_name) != 0){
         return NULL;
     }
 
@@ -171,8 +171,8 @@ static i_node *get_inode(const char *path){
             return NULL;}
 
         for (i = 0; i < 32; i++){
-            if ((strcmp(inode_data[index].dir_name, dirName)==0) &&
-                (strcmp(pInodeInfo[index].fileName, file_name)==0))
+            if ((strcmp(inode_data[index].dir_name, dir_name)==0) &&
+                (strcmp(pInodeInfo[index].file_name, file_name)==0))
             {
                 /* Entry found in inode block */
                 return &inode_data[i];
@@ -183,30 +183,13 @@ static i_node *get_inode(const char *path){
     return NULL;
 }
 
-bool CheckInodeAccess(tInodeInfo *pInodeInfo, int mode)
-{
-    if (!pInodeInfo)
-        return false;
-
-    if ((getuid() == 0) || (getgid() == 0) ||
-        (pInodeInfo->fstat.st_uid == getuid()) ||
-        (pInodeInfo->fstat.st_gid == getgid()))
-    {
-        /* TODO: Compare modes?? */
-        printf("[%s]: pInodeInfo->fstat.st_mode:0x%x, mode:0x%x\n",
-               __func__, pInodeInfo->fstat.st_mode, mode);
-        return true;
-    }
-
-    return false;
-}
 
 static void NPHeapBlockInit(void)
 {
     long int offset = 0;
     uint8_t *block_data = NULL;
     i_node *inode_data = NULL;
-    inode *root_inode = NULL;
+    i_node *root_inode = NULL;
 
     npheap_fd = open(nphfuse_state->device_name, O_RDWR);
     // allocate offset 0 in npheap for superblock
