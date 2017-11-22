@@ -187,7 +187,7 @@ static i_node *get_inode(const char *path){
 
 static void npheap_fs_init(void)
 {
-    long int offset = 0;
+    uint64_t offset = 0;
     uint8_t *block_data = NULL;
     i_node *inode_data = NULL;
     i_node *root_inode = NULL;
@@ -202,7 +202,7 @@ static void npheap_fs_init(void)
             }
             memset(block_data, 0, npheap_getsize(npheap_fd, 0));
         }
-
+    printf("check");
     for(offset = INODE_BLOCK_START; offset < INODE_BLOCK_END; offset++){
         if (npheap_getsize(npheap_fd, offset) == 0){
             block_data = npheap_alloc(npheap_fd, offset, 8192);
