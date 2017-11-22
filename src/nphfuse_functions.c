@@ -334,6 +334,27 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
         return -ENOENT;
 }
 
+int CanUseInode (i_node *inode_data /*, int mode */)
+{
+    if (inode_data == NULL) {
+        return 0;
+    }
+
+    else if ((getuid() == 0) || 
+    		(getgid() == 0) ||
+        	(inode_data->fstat.st_uid == getuid()) ||
+        	(inode_data->fstat.st_gid == getgid())) {
+
+        return 1;
+    }
+
+    else {
+    	return 0;
+	}
+}
+
+
+
 /** File open operation
  *
  * No creation, or truncation flags (O_CREAT, O_EXCL, O_TRUNC)
@@ -346,11 +367,22 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
  */
 int nphfuse_open(const char *path, struct fuse_file_info *fi)
 {
-    if ((fi->flags & O_ACCMODE) != O_RDONLY)
-        return -EACCES;
+	struct timeval day_tm;
+ 	i_node	*inode_data = get_inode(path);
 
-    return -ENOENT;
+ 	if (inode_data == NULL) return -ENOENT;
+ 	
+ 	int my_flag =  CanUseInode(inode_data);
 
+ 	if (my_flag != 1) return -EACCES;
+
+ 	// MORE Changes Can be Made here!!! 
+
+ 	fi->fh = inode_data->fstat.st_ino;
+ 	gettimeofday(&day_tm, NULL);
+ 	i_node->fstat.st_atime = day_tm.tv_sec;
+ 	npheap_lock (npheap_fd, inode_data->offset);
+ 	return 0;
 }
 
 /** Read data from an open file
