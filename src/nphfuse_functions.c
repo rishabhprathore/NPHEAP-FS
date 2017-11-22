@@ -134,6 +134,20 @@ int GetDirFileName(const char *path, char *dir, char *file)
     free(string);
     return 0;
 }
+static i_node *get_root_inode(void)
+{
+    i_node *root_inode = NULL;
+
+    root_inode = (i_node *)npheap_alloc(npheap_fd, 1,
+                                            npheap_getsize(npheap_fd, 1));
+    if (!root_inode)
+    {
+        printf("Root directory inode info not found!!\n");
+        return NULL;
+    }
+
+    return &root_inode[0];
+}
 
 static i_node *get_inode(const char *path){
     i_node *inode_data = NULL;
@@ -142,7 +156,8 @@ static i_node *get_inode(const char *path){
     __u64 offset = 0;
     __u8 index = 0;
 
-    if (strcmp(path, "/")==0) return &(i_node *)npheap_alloc(npheap_fd, 1, 8192)[0];
+    if (strcmp(path, "/")==0) 
+        return get_root_inode();
 
     if (GetDirFileName(path, dirName, fileName) != SUCCESS){
         return NULL;
@@ -212,7 +227,7 @@ static void NPHeapBlockInit(void)
     }
     //get info of root directory inode
 
-    root_inode = &(i_node *)npheap_alloc(npheap_fd, 1,8192)[0];
+    root_inode = get_root_inode();
 
     strcpy(root_inode->dir_name, "/");
     strcpy(pInodeInfo->file_name, "/");
