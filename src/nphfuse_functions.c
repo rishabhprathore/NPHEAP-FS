@@ -138,7 +138,7 @@ int GetDirFileName(const char *path, char *dir, char *file)
 static i_node *get_root_inode(void)
 {
     i_node *root_inode = NULL;
-    log_msg("\nget_root_inode() called 1\n %s", npheap_getsize(npheap_fd, 1));
+    log_msg("\nget_root_inode()  %s", npheap_getsize(npheap_fd, 1));
     root_inode = (i_node *)npheap_alloc(npheap_fd, 1,npheap_getsize(npheap_fd, 1));
     if (!root_inode)
     {
@@ -203,7 +203,7 @@ static void npheap_fs_init(void)
             memset(block_data, 0, npheap_getsize(npheap_fd, 0));
         }
     printf("check");
-    for(offset = INODE_BLOCK_START; offset < INODE_BLOCK_END; offset++){
+    for(offset = 1; offset < 51; offset++){
         if (npheap_getsize(npheap_fd, offset) == 0){
             block_data = npheap_alloc(npheap_fd, offset, 8192);
             memset(block_data, 0, npheap_getsize(npheap_fd, offset));
