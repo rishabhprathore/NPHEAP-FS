@@ -416,7 +416,7 @@ int nphfuse_release(const char *path, struct fuse_file_info *fi)
 {
     char fp[PATH_MAX];
 
-    get_full_path(path, fullPath);
+    get_full_path(path, fp);
     return close(fi->fh);
 }
 
@@ -438,7 +438,7 @@ int nphfuse_setxattr(const char *path, const char *name, const char *value, size
 {
     char fp[PATH_MAX];
 
-    get_full_path(path, fullPath);
+    get_full_path(path, fp);
     return (lsetxattr(fullPath, name, value, size, flags));
 }
 
