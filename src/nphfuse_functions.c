@@ -165,7 +165,7 @@ static i_node *get_inode(const char *path){
 
     for (offset = 1; offset < 51; offset++)
     {
-        inode_data = (i_node *)npheap_alloc(npheap_fd, offset,8192);
+        inode_data = (i_node *)npheap_alloc(npheap_fd, offset, 8192);
         if (inode_data==0){
             printf("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
             return NULL;}
@@ -196,7 +196,7 @@ static void npheap_fs_init(void)
     log_msg("\n npheap fd  %d\n", npheap_fd);
     if(npheap_getsize(npheap_fd, 0) == 0){
         log_msg("\n inside superblock allocation\n");
-        block_data = npheap_alloc(npheap_fd, 0, 8192);
+        block_data = npheap_alloc(npheap_fd, 1, 5000);
         if (block_data == NULL)
         {
             printf("Failed to allocate npheap memory to offset: 0");
@@ -211,7 +211,7 @@ static void npheap_fs_init(void)
             if (npheap_getsize(npheap_fd, offset) == 0)
             {
                 block_data = npheap_alloc(npheap_fd, offset, 8192);
-                memset(block_data, 0, npheap_getsize(npheap_fd, offset));
+                memset(lock_data, 0, npheap_getsize(npheap_fd, offset));
             }
     }
     //get info of root directory inode
