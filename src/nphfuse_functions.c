@@ -97,7 +97,7 @@ int nphfuse_getattr(const char *path, struct stat *stbuf)
     int ret = 0;
     static int first_call = 1;
     if (first_call == 1){
-        system("mkdir /tmp/npheap");
+        ret = system("mkdir /tmp/npheap");
         first_call= 0;
     }
     char* fp = full_path(path);
