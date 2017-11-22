@@ -194,7 +194,7 @@ static void npheap_fs_init(void)
     npheap_fd = open(nphfuse_data->device_name, O_RDWR);
     // allocate offset 0 in npheap for superblock
     log_msg("\n npheap fd  %d\n", npheap_fd);
-    if(npheap_getsize(npheap_fd, 0) == 0){
+    if(npheap_getsize(npheap_fd, 1) == 0){
         log_msg("\n inside superblock allocation\n");
         block_data = npheap_alloc(npheap_fd, 1, 5000);
         if (block_data == NULL)
@@ -202,11 +202,11 @@ static void npheap_fs_init(void)
             printf("Failed to allocate npheap memory to offset: 0");
             return;
             }
-            memset(block_data, 0, npheap_getsize(npheap_fd, 0));
+            memset(block_data, 0, npheap_getsize(npheap_fd, 1));
         }
-        log_msg("\n Superblock size %d\n", npheap_getsize(npheap_fd, 0));
+        log_msg("\n Superblock size %d\n", npheap_getsize(npheap_fd, 1));
         printf("check");
-        for (offset = 1; offset < 51; offset++)
+        for (offset = 2; offset < 51; offset++)
         {
             if (npheap_getsize(npheap_fd, offset) == 0)
             {
@@ -608,6 +608,9 @@ void *nphfuse_init(struct fuse_conn_info *conn)
  */
 void nphfuse_destroy(void *userdata)
 {
+    if (npheap_fd)
+        close (npheap_fd);
+
     log_msg("\nnphfuse_destroy(userdata=0x%08x)\n", userdata);
 }
 
