@@ -211,9 +211,9 @@ static void npheap_fs_init(void)
         }
     }
     //get info of root directory inode
-    log_msg("\nnphfuse_fs_init() called\n");
+    
     root_inode = get_root_inode();
-
+    log_msg("\nnphfuse_fs_init() called 1\n");
     strcpy(root_inode->dir_name, "/");
     strcpy(root_inode->file_name, "/");
     root_inode->fstat.st_ino = inode_num++;
