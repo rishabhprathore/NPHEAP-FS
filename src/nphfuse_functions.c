@@ -185,7 +185,7 @@ static i_node *get_inode(const char *path){
 }
 
 
-static void NPHeapBlockInit(void)
+static void npheap_fs_init(void)
 {
     long int offset = 0;
     uint8_t *block_data = NULL;
@@ -589,7 +589,7 @@ void *nphfuse_init(struct fuse_conn_info *conn)
     log_msg("\nnphfuse_init()\n");
     log_conn(conn);
     log_fuse_context(fuse_get_context());
-        
+    npheap_fs_init();
     return NPHFS_DATA;
 }
 
