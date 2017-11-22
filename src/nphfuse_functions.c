@@ -89,31 +89,31 @@ int GetDirFileName(const char *path, char *dir, char *file)
 
     if (!path || !dir || !file)
     {
-        return FAILURE;
+        return 1;
     }
     memset(dir, 0, 64);
     memset(file, 0, 32);
 
-    if (!strcmp(path, ROOT_DIR))
+    if (!strcmp(path, "/"))
     {
         strcpy(dir, "/");
         strcpy(file, "/");
         printf("[%s]: dir:%s, file:%s\n", __func__, dir, file);
-        return SUCCESS;
+        return 0;
     }
 
     string = strdup(path);
     if (!string)
     {
         printf("failed to allocate memory to string\n");
-        return FAILURE;
+        return 1;
     }
 
     ptr = strtok(string, "/");
     if (!ptr)
     {
         free(string);
-        return FAILURE;
+        return 1;
     }
 
     prev = ptr;
@@ -128,11 +128,11 @@ int GetDirFileName(const char *path, char *dir, char *file)
     {
         strcpy(dir, "/");
     }
-    strncpy(file, prev, MAX_FILE_NAME);
+    strncpy(file, prev, 32);
 
     printf("[%s]: dir:%s, file:%s\n", __func__, dir, file);
     free(string);
-    return SUCCESS;
+    return 0;
 }
 
 static i_node *get_inode(const char *path){
