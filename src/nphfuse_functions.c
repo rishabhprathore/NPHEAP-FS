@@ -195,10 +195,12 @@ static void npheap_fs_init(void)
     // allocate offset 0 in npheap for superblock
     log_msg("\n npheap fd  %d\n", npheap_fd);
     if(npheap_getsize(npheap_fd, 0) == 0){
-            block_data = npheap_alloc(npheap_fd, 0, 8192);
-            if(block_data==NULL){
-                printf("Failed to allocate npheap memory to offset: 0");
-                return;
+        log_msg("\n inside superblock allocation\n");
+        block_data = npheap_alloc(npheap_fd, 0, 8192);
+        if (block_data == NULL)
+        {
+            printf("Failed to allocate npheap memory to offset: 0");
+            return;
             }
             memset(block_data, 0, npheap_getsize(npheap_fd, 0));
         }
