@@ -310,6 +310,7 @@ int nphfuse_mkdir(const char *path, mode_t mode)
         log_msg("\ngetdirfilename failed!\n");
         return -EINVAL;
     }
+    log_msg("\n dir_name = %s\n", dir_name);
 
     memset(inode_data, 0, sizeof(i_node));
     log_msg("\n before dir_name copy!\n");
