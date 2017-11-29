@@ -278,6 +278,29 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
     return -ENOENT;
 }
 
+/* Helper function for mkdir. Assigns values to i_node struct's fstat parameters*/
+i_node mkdir_fstat_helper(i_node *inode_data, mode_t mode) {
+
+    i_node* temp_node = (i_node)malloc(sizeof(i_node));
+    temp_node = inode_data;
+    
+    struct timeval day_tm;
+
+    temp_node->fstat.st_ino = inode_num++;
+    temp_node->fstat.st_mode = S_IFDIR | mode;
+    temp_node->fstat.st_gid = getgid();
+    temp_node->fstat.st_uid = getuid();
+    temp_node->fstat.st_size = 8192;
+    temp_node->fstat.st_nlink = 2;
+
+    gettimeofday(&day_tm, NULL);
+    temp_node->fstat.st_atime = day_tm.tv_sec;
+    temp_node->fstat.st_mtime = day_tm.tv_sec;
+    temp_node->fstat.st_ctime = day_tm.tv_sec;
+// doubt: if I'm returning below, when should I free temp_node?
+    return temp_node;
+}
+
 /** Create a directory */
 int nphfuse_mkdir(const char *path, mode_t mode)
 {
@@ -297,7 +320,7 @@ int nphfuse_mkdir(const char *path, mode_t mode)
             if ((t_inode_data[i].dir_name[0] == '\0') &&
                 (t_inode_data[i].file_name[0] == '\0')){
                 log_msg("\nmkdir:: Free index:%d, offset:%d\n", i, offset);
-                inode_data= &t_inode_data[i];
+                inode_data = &t_inode_data[i];
                 log_msg("\nafter inode_data\n");
                 check = 1;
                 break;
@@ -319,6 +342,8 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     log_msg("\n before file_name copy!\n");
     strcpy(inode_data->file_name, file_name);
     log_msg("\n after file_name copy!\n");
+
+/*
     inode_data->fstat.st_ino = inode_num++;
     inode_data->fstat.st_mode = S_IFDIR | mode;
     inode_data->fstat.st_nlink = 2;
@@ -330,6 +355,8 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     inode_data->fstat.st_atime = day_tm.tv_sec;
     inode_data->fstat.st_mtime = day_tm.tv_sec;
     inode_data->fstat.st_ctime = day_tm.tv_sec;
+*/
+    inode_data = mkdir_fstat_helper(inode_data, mode);
     log_msg("\nbefore return %d \n", inode_data->fstat.st_ino);
     return 0;
 }
