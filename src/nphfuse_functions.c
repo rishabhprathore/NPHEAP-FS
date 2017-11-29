@@ -138,16 +138,18 @@ int GetDirFileName(const char *path, char *dir, char *file)
 static i_node *get_root_inode(void)
 {
     i_node *root_inode = NULL;
-    log_msg("get_root_inode called");
-    log_msg("\nget_root_inode()  %d", npheap_getsize(npheap_fd, 2));
+    i_node *test_inode = NULL;
+    log_msg("\nget_root_inode() called %d", npheap_getsize(npheap_fd, 2));
     root_inode = (i_node *)npheap_alloc(npheap_fd, 1,npheap_getsize(npheap_fd, 2));
     if (!root_inode)
     {
         printf("Root directory inode info not found!!\n");
         return NULL;
     }
-    log_msg("\nget_root_inode() called 1\n");
-    return &root_inode[0];
+    
+    test_inode= &root_inode[0];
+    log_msg("\ntest_inode links- %d, size - %d",
+            test_inode->fstat.st_nlink, test_inode->fstat.st_size);
 }
 
 static i_node *get_inode(const char *path){
@@ -213,7 +215,6 @@ static void npheap_fs_init(void)
                     offset, npheap_getsize(npheap_fd, offset));
             if (npheap_getsize(npheap_fd, offset) == 0)
             {
-                
                 block_data = npheap_alloc(npheap_fd, offset, 8192);
                 memset(block_data, 0, npheap_getsize(npheap_fd, offset));
                 log_msg("\n inode size for offset: %d-> %d\n",
