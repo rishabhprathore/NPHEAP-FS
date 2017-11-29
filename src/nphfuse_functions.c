@@ -312,8 +312,11 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     }
 
     memset(inode_data, 0, sizeof(i_node));
+    log_msg("\n before dir_name copy!\n");
     strncpy(inode_data->dir_name, dir_name, 64);
+    log_msg("\n before file_name copy!\n");
     strncpy(inode_data->file_name, file_name, 32);
+    log_msg("\n after file_name copy!\n");
     inode_data->fstat.st_ino = inode_num++;
     inode_data->fstat.st_mode = S_IFDIR | mode;
     inode_data->fstat.st_nlink = 2;
