@@ -209,8 +209,11 @@ static void npheap_fs_init(void)
         log_msg("check");
         for (offset = 2; offset < 51; offset++)
         {
+            log_msg("\n before alloc offset: %d-> %d\n",
+                    offset, npheap_getsize(npheap_fd, offset));
             if (npheap_getsize(npheap_fd, offset) == 0)
             {
+                
                 block_data = npheap_alloc(npheap_fd, offset, 8192);
                 memset(block_data, 0, npheap_getsize(npheap_fd, offset));
                 log_msg("\n inode size for offset: %d-> %d\n",
