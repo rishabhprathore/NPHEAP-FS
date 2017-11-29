@@ -138,8 +138,9 @@ int GetDirFileName(const char *path, char *dir, char *file)
 static i_node *get_root_inode(void)
 {
     i_node *root_inode = NULL;
-    log_msg("\nget_root_inode()  %s", npheap_getsize(npheap_fd, 1));
-    root_inode = (i_node *)npheap_alloc(npheap_fd, 1,npheap_getsize(npheap_fd, 1));
+    log_msg("get_root_inode called");
+    log_msg("\nget_root_inode()  %s", npheap_getsize(npheap_fd, 2));
+    root_inode = (i_node *)npheap_alloc(npheap_fd, 1,npheap_getsize(npheap_fd, 2));
     if (!root_inode)
     {
         printf("Root directory inode info not found!!\n");
@@ -196,7 +197,7 @@ static void npheap_fs_init(void)
     log_msg("\n npheap fd  %d\n", npheap_fd);
     if(npheap_getsize(npheap_fd, 1) == 0){
         log_msg("\n inside superblock allocation\n");
-        block_data = npheap_alloc(npheap_fd, 1, 5000);
+        block_data = npheap_alloc(npheap_fd, 1, 8192);
         if (block_data == NULL)
         {
             printf("Failed to allocate npheap memory to offset: 0");
@@ -205,7 +206,7 @@ static void npheap_fs_init(void)
             memset(block_data, 0, npheap_getsize(npheap_fd, 1));
         }
         log_msg("\n Superblock size %d\n", npheap_getsize(npheap_fd, 1));
-        printf("check");
+        log_msg("check");
         for (offset = 2; offset < 51; offset++)
         {
             if (npheap_getsize(npheap_fd, offset) == 0)
