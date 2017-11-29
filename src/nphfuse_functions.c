@@ -139,7 +139,7 @@ static i_node *get_root_inode(void)
 {
     i_node *root_inode = NULL;
     i_node *test_inode = NULL;
-    log_msg("\nget_root_inode() called %d", npheap_getsize(npheap_fd, 2));
+    log_msg("\nget_root_inode()  called %d", npheap_getsize(npheap_fd, 2));
     root_inode = (i_node *)npheap_alloc(npheap_fd, 2,npheap_getsize(npheap_fd, 2));
     if (!root_inode)
     {
