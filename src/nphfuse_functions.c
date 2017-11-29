@@ -295,7 +295,7 @@ int nphfuse_mkdir(const char *path, mode_t mode)
         for (i = 0; i < 32; i++){
             if ((t_inode_data[i].dir_name[0] == '\0') &&
                 (t_inode_data[i].file_name[0] == '\0')){
-                log_msg("Free index:%d, offset:%d\n", i, offset);
+                log_msg("mkdir:: Free index:%d, offset:%d\n", i, offset);
                 inode_data= &t_inode_data[i];
             }
         }
