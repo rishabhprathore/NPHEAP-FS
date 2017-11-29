@@ -26,7 +26,7 @@
 
 int npheap_fd = 0;
 uint64_t inode_num = 2;
-uint64_t data_offset = DATA_BLOCK_START;
+uint64_t data_offset = 51;
 
 ///////////////////////////////////////////////////////////
 //
@@ -296,15 +296,18 @@ int nphfuse_mkdir(const char *path, mode_t mode)
         for (i = 0; i < 32; i++){
             if ((t_inode_data[i].dir_name[0] == '\0') &&
                 (t_inode_data[i].file_name[0] == '\0')){
-                log_msg("mkdir:: Free index:%d, offset:%d\n", i, offset);
+                log_msg("\nmkdir:: Free index:%d, offset:%d\n", i, offset);
                 inode_data= &t_inode_data[i];
+                log_msg("\nafter inode_data\n");
                 check = 1;
                 break;
             }
         }
         if(check==1) break;
     }
+    log_msg("\nloop exit\n");
     if (GetDirFileName(path, dir_name, file_name) != 0){
+        log_msg("\ngetdirfilename failed!\n")
         return -EINVAL;
     }
 
@@ -322,6 +325,7 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     inode_data->fstat.st_atime = day_tm.tv_sec;
     inode_data->fstat.st_mtime = day_tm.tv_sec;
     inode_data->fstat.st_ctime = day_tm.tv_sec;
+    log_msg("\nbefore return %d \n", inode->fstat.st_ino);
 
     return 0;
 }
