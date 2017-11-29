@@ -281,7 +281,45 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
 /** Create a directory */
 int nphfuse_mkdir(const char *path, mode_t mode)
 {
-    return -ENOENT;
+    log_msg("inside mkdir for path: %s", path);
+    i_node *inode_data = NULL;
+    i_node *t_inode_data = NULL;
+    char dir_name[64];
+    char file_name[32];
+    struct timeval day_tm;
+    int offset =0;
+    int i=0;
+    for (offset = 2; offset < 51; offset++){
+        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
+                                                npheap_getsize(npheap_fd, offset));
+        for (i = 0; i < 32; i++){
+            if ((t_inode_data[i].dir_name[0] == '\0') &&
+                (t_inode_data[i].file_name[0] == '\0')){
+                log_msg("Free index:%d, offset:%d\n", i, offset);
+                inode_data= &t_inode_data[i];
+            }
+        }
+    }
+    if (GetDirFileName(path, dir_name, file_name) != 0){
+        return -EINVAL;
+    }
+
+    memset(inode_data, 0, sizeof(i_node));
+    strncpy(inode_data->dir_name, dir_name, 64);
+    strncpy(inode_data->file_name, file_name, 32);
+    inode_data->fstat.st_ino = inode_num++;
+    inode_data->fstat.st_mode = S_IFDIR | mode;
+    inode_data->fstat.st_nlink = 2;
+    inode_data->fstat.st_size = 8192;
+    inode_data->fstat.st_uid = getuid();
+    inode_data->fstat.st_gid = getgid();
+
+    gettimeofday(&day_tm, NULL);
+    inode_data->fstat.st_atime = day_tm.tv_sec;
+    inode_data->fstat.st_mtime = day_tm.tv_sec;
+    inode_data->fstat.st_ctime = day_tm.tv_sec;
+
+    return 0;
 }
 
 /** Remove a file */
@@ -546,7 +584,7 @@ int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
     inode_data = get_inode(path);
     log_msg("\ninside opendir for inode filename:  %s\n", inode_data->file_name);
     if (inode_data == NULL) {return -ENOENT;}
-    
+
     if (CanUseInode(inode_data) != 1) {return -EACCES;}
 
     return 0;
