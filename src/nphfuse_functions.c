@@ -545,8 +545,7 @@ int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
     inode_data = GetInodeInfo(path);
     if (inode_data == NULL) {return -ENOENT;}
 
-    if (CanUseInode(inode_data) != 1)
-        return -EACCES;
+    if (CanUseInode(inode_data) != 1) {return -EACCES;}
 
     return 0;
 }
