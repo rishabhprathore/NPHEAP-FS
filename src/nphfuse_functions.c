@@ -289,6 +289,7 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     struct timeval day_tm;
     int offset =0;
     int i=0;
+    int check = 0;
     for (offset = 2; offset < 51; offset++){
         t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
                                                 npheap_getsize(npheap_fd, offset));
@@ -297,8 +298,11 @@ int nphfuse_mkdir(const char *path, mode_t mode)
                 (t_inode_data[i].file_name[0] == '\0')){
                 log_msg("mkdir:: Free index:%d, offset:%d\n", i, offset);
                 inode_data= &t_inode_data[i];
+                check = 1;
+                break;
             }
         }
+        if(check==1) break;
     }
     if (GetDirFileName(path, dir_name, file_name) != 0){
         return -EINVAL;
