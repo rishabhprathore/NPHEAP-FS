@@ -307,7 +307,7 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     }
     log_msg("\nloop exit\n");
     if (GetDirFileName(path, dir_name, file_name) != 0){
-        log_msg("\ngetdirfilename failed!\n")
+        log_msg("\ngetdirfilename failed!\n");
         return -EINVAL;
     }
 
