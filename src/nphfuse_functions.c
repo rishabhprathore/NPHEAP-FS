@@ -139,7 +139,7 @@ static i_node *get_root_inode(void)
 {
     i_node *root_inode = NULL;
     log_msg("get_root_inode called");
-    log_msg("\nget_root_inode()  %s", npheap_getsize(npheap_fd, 2));
+    log_msg("\nget_root_inode()  %d", npheap_getsize(npheap_fd, 2));
     root_inode = (i_node *)npheap_alloc(npheap_fd, 1,npheap_getsize(npheap_fd, 2));
     if (!root_inode)
     {
@@ -213,6 +213,8 @@ static void npheap_fs_init(void)
             {
                 block_data = npheap_alloc(npheap_fd, offset, 8192);
                 memset(block_data, 0, npheap_getsize(npheap_fd, offset));
+                log_msg("\n inode size for offset: %d-> %d\n",
+                offset, npheap_getsize(npheap_fd, offset));
             }
     }
     //get info of root directory inode
