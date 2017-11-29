@@ -325,8 +325,7 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     inode_data->fstat.st_atime = day_tm.tv_sec;
     inode_data->fstat.st_mtime = day_tm.tv_sec;
     inode_data->fstat.st_ctime = day_tm.tv_sec;
-    log_msg("\nbefore return %d \n", inode->fstat.st_ino);
-
+    log_msg("\nbefore return %d \n", inode_data->fstat.st_ino);
     return 0;
 }
 
