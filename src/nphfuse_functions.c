@@ -150,6 +150,7 @@ static i_node *get_root_inode(void)
     test_inode= &root_inode[0];
     log_msg("\ntest_inode links- %d, size - %d",
             test_inode->fstat.st_nlink, test_inode->fstat.st_size);
+    return test_inode;
 }
 
 static i_node *get_inode(const char *path){
@@ -224,9 +225,9 @@ static void npheap_fs_init(void)
     //get info of root directory inode
     
     root_inode = get_root_inode();
-    log_msg("\nnphfuse_fs_init() called 1\n");
+    log_msg("\nnphfuse_fs_init()  1\n");
     strcpy(root_inode->dir_name, "/");
-    log_msg("\nnphfuse_fs_init() called 2\n");
+    log_msg("\nnphfuse_fs_init()  2\n");
     strcpy(root_inode->file_name, "/");
     root_inode->fstat.st_ino = inode_num++;
     root_inode->fstat.st_mode = S_IFDIR | 0755;
@@ -234,6 +235,7 @@ static void npheap_fs_init(void)
     root_inode->fstat.st_size = npheap_getsize(npheap_fd, 1);
     root_inode->fstat.st_uid = getuid();
     root_inode->fstat.st_gid = getgid();
+    root_inode = get_root_inode();
     return;
 }
 
