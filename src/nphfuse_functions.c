@@ -380,7 +380,7 @@ int nphfuse_open(const char *path, struct fuse_file_info *fi)
 
  	fi->fh = inode_data->fstat.st_ino;
  	gettimeofday(&day_tm, NULL);
- 	i_node->fstat.st_atime = day_tm.tv_sec;
+ 	inode_data->fstat.st_atime = day_tm.tv_sec;
  	npheap_lock (npheap_fd, inode_data->offset);
  	return 0;
 }
