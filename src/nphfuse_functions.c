@@ -540,11 +540,13 @@ int nphfuse_removexattr(const char *path, const char *name)
  */
 int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
 {
+    log_msg("\ninside opendir for path: %s\n", path);
     i_node *inode_data = NULL;
-
-    inode_data = GetInodeInfo(path);
+    
+    inode_data = get_inode(path);
+    log_msg("\ninside opendir for inode filename:  %s\n", inode_data->file_name);
     if (inode_data == NULL) {return -ENOENT;}
-
+    
     if (CanUseInode(inode_data) != 1) {return -EACCES;}
 
     return 0;
