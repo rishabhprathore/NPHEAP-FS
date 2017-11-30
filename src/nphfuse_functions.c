@@ -311,8 +311,8 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
 {
 
     log_msg("inside mknod() for path: %s", path);
-    char dir_name[64];
-    char file_name[32];
+    char dir_name[224];
+    char file_name[128];
     uint8_t *localDBlock = NULL;
     i_node *inode_data = NULL;
     i_node *t_inode_data = NULL;
@@ -320,10 +320,10 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
     int i=0;
     int check = 0;
     
-    for (offset = 2; offset < 51; offset++){
+    for (offset = 2; offset < 1000; offset++){
         t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
                                                 npheap_getsize(npheap_fd, offset));
-        for (i = 0; i < 32; i++){
+        for (i = 0; i < 16; i++){
             if ((t_inode_data[i].dir_name[0] == '\0') &&
                 (t_inode_data[i].file_name[0] == '\0')){
                 inode_data = &t_inode_data[i];
@@ -354,7 +354,7 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
         return -ENOSPC;
     }
 
-    localDBlock = npheap_alloc(npheap_fd, data_offset, BLOCK_CAPACITY);
+    localDBlock = npheap_alloc(npheap_fd, data_offset, 8192);
     
     if (localDBlock == NULL) {
         memset(inode_data, 0, sizeof(i_node));
@@ -402,10 +402,10 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     int offset =0;
     int i=0;
     int check = 0;
-    for (offset = 2; offset < 51; offset++){
+    for (offset = 2; offset < 1000; offset++){
         t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
                                                 npheap_getsize(npheap_fd, offset));
-        for (i = 0; i < 32; i++){
+        for (i = 0; i < 16; i++){
             if ((t_inode_data[i].dir_name[0] == '\0') &&
                 (t_inode_data[i].file_name[0] == '\0')){
                 log_msg("\nmkdir:: Free index:%d, offset:%d\n", i, offset);
