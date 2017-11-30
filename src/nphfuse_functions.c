@@ -279,11 +279,8 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
 }
 
 /* Helper function for mkdir. Assigns values to i_node struct's fstat parameters*/
-i_node mkdir_fstat_helper(i_node *inode_data, mode_t mode) {
+void mkdir_fstat_helper(i_node *temp_node, mode_t mode) {
 
-    i_node* temp_node = (i_node)malloc(sizeof(i_node));
-    temp_node = inode_data;
-    
     struct timeval day_tm;
 
     temp_node->fstat.st_ino = inode_num++;
@@ -297,7 +294,7 @@ i_node mkdir_fstat_helper(i_node *inode_data, mode_t mode) {
     temp_node->fstat.st_atime = day_tm.tv_sec;
     temp_node->fstat.st_mtime = day_tm.tv_sec;
     temp_node->fstat.st_ctime = day_tm.tv_sec;
-// doubt: if I'm returning below, when should I free temp_node?
+    
     return temp_node;
 }
 
@@ -356,7 +353,7 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     inode_data->fstat.st_mtime = day_tm.tv_sec;
     inode_data->fstat.st_ctime = day_tm.tv_sec;
 */
-    inode_data = mkdir_fstat_helper(inode_data, mode);
+    mkdir_fstat_helper(inode_data, mode);
     log_msg("\nbefore return %d \n", inode_data->fstat.st_ino);
     return 0;
 }
