@@ -268,63 +268,97 @@ int nphfuse_readlink(const char *path, char *link, size_t size)
     return -1;
 }
 
+/* Helper function for mknod(). Assigns values to i_node struct's fstat parameters*/
+void mknod_fstat_helper(i_node *temp_node, mode_t mode) {
+
+    struct timeval day_tm;
+
+    temp_node->fstat.st_ino = inode_num++;
+    temp_node->fstat.st_mode = mode;
+    temp_node->fstat.st_gid = getgid();
+    temp_node->fstat.st_uid = getuid();
+    temp_node->fstat.st_dev = dev;
+    temp_node->fstat.st_nlink = 1;
+
+    gettimeofday(&day_tm, NULL);
+    temp_node->fstat.st_atime = day_tm.tv_sec;
+    temp_node->fstat.st_mtime = day_tm.tv_sec;
+    temp_node->fstat.st_ctime = day_tm.tv_sec;
+
+    return;
+}
+
 /** Create a file node
  *
  * There is no create() operation, mknod() will be called for
  * creation of all non-directory, non-symlink nodes.
  */
+
+
 int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
 {
 
+    log_msg("inside mknod() for path: %s", path);
+    char dir_name[64];
+    char file_name[32];
+    uint8_t *localDBlock = NULL;
     i_node *inode_data = NULL;
-    uint8_t *pDataBlock = NULL;
-    char dirName[MAX_DIR_PATH];
-    char fileName[MAX_FILE_NAME];
-    struct timeval tv;
-
-    pInodeInfo = GetFreeInodeEntry();
-
-    if (GetDirFileName(path, dirName, fileName) != SUCCESS)
-    {
-        return -EINVAL;
+    i_node *t_inode_data = NULL;
+    int offset =0;
+    int i=0;
+    int check = 0;
+    
+    for (offset = 2; offset < 51; offset++){
+        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
+                                                npheap_getsize(npheap_fd, offset));
+        for (i = 0; i < 32; i++){
+            if ((t_inode_data[i].dir_name[0] == '\0') &&
+                (t_inode_data[i].file_name[0] == '\0')){
+                inode_data = &t_inode_data[i];
+                check = 1;
+                break;
+            }
+        }
+        if(check==1) break;
     }
+    log_msg("\nloop exit for mknod()\n");
+    if (GetDirFileName(path, dir_name, file_name) != 0) {
+         log_msg("\ngetdirfilename failed!\n");
+         return -EINVAL;
+    }
+    log_msg("\n dir_name = %s\n", dir_name);
 
-    memset(pInodeInfo, 0, sizeof(tInodeInfo));
-    strncpy(pInodeInfo->dirName, dirName, MAX_DIR_PATH);
-    strncpy(pInodeInfo->fileName, fileName, MAX_FILE_NAME);
-    pInodeInfo->fstat.st_ino = gInodeNum++;
-    pInodeInfo->fstat.st_mode = mode;
-    pInodeInfo->fstat.st_nlink = 1;
-    pInodeInfo->fstat.st_dev = dev;
-    pInodeInfo->fstat.st_uid = getuid();
-    pInodeInfo->fstat.st_gid = getgid();
 
-    gettimeofday(&tv, NULL);
-    pInodeInfo->fstat.st_atime = tv.tv_sec;
-    pInodeInfo->fstat.st_mtime = tv.tv_sec;
-    pInodeInfo->fstat.st_ctime = tv.tv_sec;
+    memset(inode_data, 0, sizeof(i_node));
+    strcpy(inode_data->dir_name, dir_name);
+    strcpy(inode_data->file_name, file_name);
+    mknod_fstat_helper(inode_data, mode);
 
-    if (npheap_getsize(npHeapFd, gOffset) != 0)
-    {
+
+// ???????????????????????????????????????????????????????????? npheap_getsize()
+    if (npheap_getsize(npheap_fd, data_offset) != 0) {
         /* Expected offset not available */
-        memset(pInodeInfo, 0, sizeof(tInodeInfo));
-        gInodeNum--;
+        memset(inode_data, 0, sizeof(i_node));
+        inode_num = inode_num - 1;
         return -ENOSPC;
     }
 
-    pDataBlock = npheap_alloc(npHeapFd, gOffset, BLOCK_SIZE);
-    if (!pDataBlock)
-    {
-        memset(pInodeInfo, 0, sizeof(tInodeInfo));
-        gInodeNum--;
+// ??????????????????????????????????????????????????????????? npheap_alloc ()
+    localDBlock = npheap_alloc(npheap_fd, data_offset, BLOCK_CAPACITY);
+    
+    if (localDBlock == NULL) {
+        memset(inode_data, 0, sizeof(i_node));
+        inode_num = inode_num - 1;
         return -ENOMEM;
     }
-    memset(pDataBlock, 0, BLOCK_SIZE);
 
-    pInodeInfo->offset = gOffset++;
+    memset(localDBlock, 0, BLOCK_CAPACITY);
+    inode_data->offset = data_offset++;
 
+    log_msg("\nbefore return %d \n", inode_data->fstat.st_ino);
     return 0;
 }
+
 
 /* Helper function for mkdir. Assigns values to i_node struct's fstat parameters*/
 void mkdir_fstat_helper(i_node *temp_node, mode_t mode) {
