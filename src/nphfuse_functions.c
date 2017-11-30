@@ -186,7 +186,7 @@ static i_node *get_inode(const char *path){
     {
         inode_data = (i_node *)npheap_alloc(npheap_fd, offset, 8192);
         if (inode_data==0){
-            printf("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
+            log_msg("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
             return NULL;}
 
         for (i = 0; i < 16; i++){
@@ -198,7 +198,7 @@ static i_node *get_inode(const char *path){
             }
         }
     }
-
+    log_msg("\n get_inode returning NULL\n")
     return NULL;
 }
 
