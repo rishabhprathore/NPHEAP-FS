@@ -499,7 +499,7 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
     inode_data = get_inode(path);
     
 
-    if (CanUseInode(pInodeInfo) != 1) return -EACCES;
+    if (CanUseInode(inode_data) != 1) return -EACCES;
     if (ubuf->actime)
         inode_data->fstat.st_atime = ubuf->actime;
     if (ubuf->modtime)
