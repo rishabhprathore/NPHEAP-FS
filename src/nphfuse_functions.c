@@ -52,16 +52,13 @@ int CanUseInode(i_node *inode_data /*, int mode */)
     {
         return 0;
     }
-
     else if ((getuid() == 0) ||
              (getgid() == 0) ||
              (inode_data->fstat.st_uid == getuid()) ||
              (inode_data->fstat.st_gid == getgid()))
     {
-
         return 1;
     }
-
     else
     {
         return 0;
