@@ -494,7 +494,18 @@ int nphfuse_truncate(const char *path, off_t newsize)
 /** Change the access and/or modification times of a file */
 int nphfuse_utime(const char *path, struct utimbuf *ubuf)
 {
-        return -ENOENT;
+    i_node *inode_data = NULL;
+
+    inode_data = get_inode(path);
+    
+
+    if (CanUseInode(pInodeInfo) != 1) return -EACCES;
+    if (ubuf->actime)
+        inode_data->fstat.st_atime = ubuf->actime;
+    if (ubuf->modtime)
+        inode_data->fstat.st_mtime = ubuf->modtime;
+
+    return 0;
 }
 
 int CanUseInode (i_node *inode_data /*, int mode */)
