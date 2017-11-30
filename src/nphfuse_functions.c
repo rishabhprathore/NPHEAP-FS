@@ -26,8 +26,9 @@
 
 int npheap_fd = 0;
 uint64_t inode_num = 2;
-uint64_t data_offset = 51;
+uint64_t data_offset = 1000;
 
+uint8_t *data_array[10999]; 
 ///////////////////////////////////////////////////////////
 //
 // Prototypes for all these functions, and the C-style comments,
@@ -46,20 +47,13 @@ uint64_t data_offset = 51;
 
 extern struct nphfuse_state *nphfuse_data;
 
-int CanUseInode(i_node *inode_data /*, int mode */)
+int CanUseInode(i_node *inode_data)
 {
-    if (inode_data == NULL){
-        return 0;
-    }
-    else if ((getuid() == 0) ||
-             (getgid() == 0) ||
-             (inode_data->fstat.st_uid == getuid()) ||
-             (inode_data->fstat.st_gid == getgid())){
-        return 1;
-    }
-    else{
-        return 0;
-    }
+    if (inode_data == NULL) return 0;
+    if ((getuid() == 0) || (getgid() == 0)) return 1;
+    if(inode_data->fstat.st_uid == getuid() ||
+             (inode_data->fstat.st_gid == getgid())) return 1;
+    return 0;
 }
 
 void split_func(char *local_pathname) {
@@ -743,8 +737,8 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
     struct dirent de;
     i_node *inode_data = NULL;
     for (int offset = 2; offset < 51; offset++){
-        inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
-                                                npheap_getsize(npheap_fd, offset));
+        //inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
+        //                                        npheap_getsize(npheap_fd, offset));
         for (int i = 0; i < 32; i++)
         {
             if ((!strcmp(inode_data[i].dir_name, path)) &&
