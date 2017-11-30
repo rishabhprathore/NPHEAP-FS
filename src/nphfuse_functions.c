@@ -102,8 +102,8 @@ int GetDirFileName(const char *path, char *dir, char *file)
     {
         return 1;
     }
-    memset(dir, 0, 64);
-    memset(file, 0, 32);
+    memset(dir, 0, 224);
+    memset(file, 0, 128);
 
     if (!strcmp(path, "/"))
     {
@@ -130,8 +130,8 @@ int GetDirFileName(const char *path, char *dir, char *file)
     prev = ptr;
     while ((ptr = strtok(NULL, "/")) != NULL)
     {
-        strncat(dir, "/", 64);
-        strncat(dir, prev, 32);
+        strncat(dir, "/", 224);
+        strncat(dir, prev, 128);
         prev = ptr;
     }
 
@@ -139,12 +139,14 @@ int GetDirFileName(const char *path, char *dir, char *file)
     {
         strcpy(dir, "/");
     }
-    strncpy(file, prev, 32);
+    strncpy(file, prev, 128);
 
     printf("[%s]: dir:%s, file:%s\n", __func__, dir, file);
     free(string);
     return 0;
 }
+
+
 static i_node *get_root_inode(void)
 {
     i_node *root_inode = NULL;
@@ -165,8 +167,8 @@ static i_node *get_root_inode(void)
 
 static i_node *get_inode(const char *path){
     i_node *inode_data = NULL;
-    char dir_name[64];
-    char file_name[32];
+    char dir_name[224];
+    char file_name[128];
     __u64 offset = 0;
     int i = 0;
 
@@ -177,14 +179,14 @@ static i_node *get_inode(const char *path){
         return NULL;
     }
 
-    for (offset = 1; offset < 51; offset++)
+    for (offset = 2; offset < 1000; offset++)
     {
         inode_data = (i_node *)npheap_alloc(npheap_fd, offset, 8192);
         if (inode_data==0){
             printf("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
             return NULL;}
 
-        for (i = 0; i < 32; i++){
+        for (i = 0; i < 16; i++){
             if ((strcmp(inode_data[i].dir_name, dir_name)==0) &&
                 (strcmp(inode_data[i].file_name, file_name)==0))
             {
@@ -220,10 +222,10 @@ static void npheap_fs_init(void)
         }
         log_msg("\n Superblock size %d\n", npheap_getsize(npheap_fd, 1));
         log_msg("check");
-        for (offset = 2; offset < 51; offset++)
+        for (offset = 2; offset < 1000; offset++)
         {
-            log_msg("\n before alloc offset: %d-> %d\n",
-                    offset, npheap_getsize(npheap_fd, offset));
+            //log_msg("\n before alloc offset: %d-> %d\n",
+            //        offset, npheap_getsize(npheap_fd, offset));
             if (npheap_getsize(npheap_fd, offset) == 0)
             {
                 block_data = npheap_alloc(npheap_fd, offset, 8192);
