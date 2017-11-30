@@ -174,7 +174,7 @@ static i_node *get_inode(const char *path){
     int i = 0;
 
     if (strcmp(path, "/")==0){
-        log_msg("\ncalling get_root_inode from root_inode()\n");
+        log_msg("\ncalling get_root_inode from get_inode()\n");
         return get_root_inode();
 }    
 
@@ -258,6 +258,7 @@ static void npheap_fs_init(void)
 int nphfuse_getattr(const char *path, struct stat *stbuf)
 {
     i_node* inode_data = NULL;
+    log_msg("\ninside get_attr for path %s\n", path);
     inode_data = get_inode(path);
     if (inode_data==NULL)
         return -ENOENT;
