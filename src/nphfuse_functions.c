@@ -815,8 +815,43 @@ int nphfuse_ftruncate(const char *path, off_t offset, struct fuse_file_info *fi)
  */
 int nphfuse_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_info *fi)
 {
-        return -ENOENT;
+
+    i_node *inode_data = NULL;
+    i_node *t_inode_data = NULL;
+    char dir_name[224];
+    char file_name[128];
+    __u64 offset = 0;
+    int i = 0;
+
+    if (strcmp(path, "/")==0) 
+        return get_root_inode();
+
+    if (GetDirFileName(path, dir_name, file_name) != 0) {
+        return NULL;
+    }
+
+    for (offset = 1; offset < 51; offset++)
+    {
+        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset, 8192);
+        if (t_inode_data==0){
+            printf("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
+            return NULL;}
+
+        for (i = 0; i < 32; i++){
+            if ((strcmp(t_inode_data[i].dir_name, dir_name)==0) &&
+                (strcmp(t_inode_data[i].file_name, file_name)==0))
+            {
+                /* Entry found in inode block */
+                inode_data = &t_inode_data[i];
+            }
+        }
+    }
+
+    if (inode_data == NULL) { return -ENOENT; }
+    memcpy (statbuf, &inode_data->fstat, sizeof(struct stat));
+    return 0;
 }
+
 
 void *nphfuse_init(struct fuse_conn_info *conn)
 {
