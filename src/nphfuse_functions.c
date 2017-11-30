@@ -651,7 +651,30 @@ int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
 int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset,
 	       struct fuse_file_info *fi)
 {
-    return -ENOENT;
+    i_node *inode_data = NULL;
+    int offset = 0;
+    int index = 0;
+    struct dirent de;
+
+    for (offset = 2; offset < 51; offset++)
+    {
+        inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
+                                                npheap_getsize(npheap_fd, offset));
+
+        for (index = 0; index < 32; index++)
+        {
+            if ((!strcmp(inode_data[index].dir_name, path)) &&
+                (strcmp(inode_data[index].file_name, "/"))){
+                /* This inode belongs to directory specified in path */
+                memset(&de, 0, sizeof(de));
+                strcpy(de.d_name, inode_data[index].file_name);
+                if (filler(buf, de.d_name, NULL, 0) != 0)
+                    return -ENOMEM;
+            }
+        }
+    }
+
+    return 0;
 }
 
 /** Release directory
