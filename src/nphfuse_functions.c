@@ -160,7 +160,7 @@ static i_node *get_root_inode(void)
     }
     
     test_inode= &root_inode[0];
-    log_msg("\ntest_inode links- %d, size - %d",
+    log_msg("\n test_inode links- %d, size - %d",
             test_inode->fstat.st_nlink, test_inode->fstat.st_size);
     return test_inode;
 }
@@ -172,8 +172,10 @@ static i_node *get_inode(const char *path){
     __u64 offset = 0;
     int i = 0;
 
-    if (strcmp(path, "/")==0) 
+    if (strcmp(path, "/")==0){
+        log_msg("\ncalling get_root_inode from root_inode()\n")
         return get_root_inode();
+}    
 
     if (GetDirFileName(path, dir_name, file_name) != 0){
         return NULL;
