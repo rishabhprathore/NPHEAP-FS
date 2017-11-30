@@ -396,8 +396,8 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     log_msg("inside mkdir for path: %s", path);
     i_node *inode_data = NULL;
     i_node *t_inode_data = NULL;
-    char dir_name[64];
-    char file_name[32];
+    char dir_name[224];
+    char file_name[128];
     struct timeval day_tm;
     int offset =0;
     int i=0;
@@ -738,10 +738,10 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
 {
     struct dirent de;
     i_node *inode_data = NULL;
-    for (int offset = 2; offset < 51; offset++){
+    for (int offset = 2; offset < 1000; offset++){
         //inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
         //                                        npheap_getsize(npheap_fd, offset));
-        for (int i = 0; i < 32; i++)
+        for (int i = 0; i < 16; i++)
         {
             if ((!strcmp(inode_data[i].dir_name, path)) &&
                 (strcmp(inode_data[i].file_name, "/"))){
