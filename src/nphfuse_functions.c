@@ -155,11 +155,12 @@ static i_node *get_root_inode(void)
     root_inode = (i_node *)npheap_alloc(npheap_fd, 2,npheap_getsize(npheap_fd, 2));
     if (!root_inode)
     {
-        printf("Root directory inode info not found!!\n");
+        log_msg("\nRoot directory inode info not found!!\n");
         return NULL;
     }
     
     test_inode= &root_inode[0];
+    log_msg("\ncheck in test_inode\n");
     log_msg("\n test_inode links- %d, size - %d",
             test_inode->fstat.st_nlink, test_inode->fstat.st_size);
     return test_inode;
