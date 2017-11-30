@@ -275,7 +275,55 @@ int nphfuse_readlink(const char *path, char *link, size_t size)
  */
 int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
 {
-    return -ENOENT;
+
+    i_node *inode_data = NULL;
+    uint8_t *pDataBlock = NULL;
+    char dirName[MAX_DIR_PATH];
+    char fileName[MAX_FILE_NAME];
+    struct timeval tv;
+
+    pInodeInfo = GetFreeInodeEntry();
+
+    if (GetDirFileName(path, dirName, fileName) != SUCCESS)
+    {
+        return -EINVAL;
+    }
+
+    memset(pInodeInfo, 0, sizeof(tInodeInfo));
+    strncpy(pInodeInfo->dirName, dirName, MAX_DIR_PATH);
+    strncpy(pInodeInfo->fileName, fileName, MAX_FILE_NAME);
+    pInodeInfo->fstat.st_ino = gInodeNum++;
+    pInodeInfo->fstat.st_mode = mode;
+    pInodeInfo->fstat.st_nlink = 1;
+    pInodeInfo->fstat.st_dev = dev;
+    pInodeInfo->fstat.st_uid = getuid();
+    pInodeInfo->fstat.st_gid = getgid();
+
+    gettimeofday(&tv, NULL);
+    pInodeInfo->fstat.st_atime = tv.tv_sec;
+    pInodeInfo->fstat.st_mtime = tv.tv_sec;
+    pInodeInfo->fstat.st_ctime = tv.tv_sec;
+
+    if (npheap_getsize(npHeapFd, gOffset) != 0)
+    {
+        /* Expected offset not available */
+        memset(pInodeInfo, 0, sizeof(tInodeInfo));
+        gInodeNum--;
+        return -ENOSPC;
+    }
+
+    pDataBlock = npheap_alloc(npHeapFd, gOffset, BLOCK_SIZE);
+    if (!pDataBlock)
+    {
+        memset(pInodeInfo, 0, sizeof(tInodeInfo));
+        gInodeNum--;
+        return -ENOMEM;
+    }
+    memset(pDataBlock, 0, BLOCK_SIZE);
+
+    pInodeInfo->offset = gOffset++;
+
+    return 0;
 }
 
 /* Helper function for mkdir. Assigns values to i_node struct's fstat parameters*/
