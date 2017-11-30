@@ -652,11 +652,10 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
 	       struct fuse_file_info *fi)
 {
     i_node *inode_data = NULL;
-    int offset = 0;
     int index = 0;
     struct dirent de;
 
-    for (offset = 2; offset < 51; offset++)
+    for (int offset = 2; offset < 51; offset++)
     {
         inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
                                                 npheap_getsize(npheap_fd, offset));
