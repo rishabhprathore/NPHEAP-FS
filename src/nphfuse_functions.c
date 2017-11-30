@@ -269,7 +269,7 @@ int nphfuse_readlink(const char *path, char *link, size_t size)
 }
 
 /* Helper function for mknod(). Assigns values to i_node struct's fstat parameters*/
-void mknod_fstat_helper(i_node *temp_node, mode_t mode) {
+void mknod_fstat_helper(i_node *temp_node, mode_t mode, dev_t dev) {
 
     struct timeval day_tm;
 
@@ -332,7 +332,7 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
     memset(inode_data, 0, sizeof(i_node));
     strcpy(inode_data->dir_name, dir_name);
     strcpy(inode_data->file_name, file_name);
-    mknod_fstat_helper(inode_data, mode);
+    mknod_fstat_helper(inode_data, mode, dev);
 
 
     if (npheap_getsize(npheap_fd, data_offset) != 0) {
@@ -342,7 +342,6 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
         return -ENOSPC;
     }
 
-// ??????????????????????????????????????????????????????????? npheap_alloc ()
     localDBlock = npheap_alloc(npheap_fd, data_offset, BLOCK_CAPACITY);
     
     if (localDBlock == NULL) {
