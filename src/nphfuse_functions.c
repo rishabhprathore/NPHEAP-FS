@@ -173,7 +173,7 @@ static i_node *get_inode(const char *path){
     int i = 0;
 
     if (strcmp(path, "/")==0){
-        log_msg("\ncalling get_root_inode from root_inode()\n")
+        log_msg("\ncalling get_root_inode from root_inode()\n");
         return get_root_inode();
 }    
 
