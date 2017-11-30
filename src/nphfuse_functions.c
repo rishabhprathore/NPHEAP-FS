@@ -46,6 +46,28 @@ uint64_t data_offset = 51;
 
 extern struct nphfuse_state *nphfuse_data;
 
+int CanUseInode(i_node *inode_data /*, int mode */)
+{
+    if (inode_data == NULL)
+    {
+        return 0;
+    }
+
+    else if ((getuid() == 0) ||
+             (getgid() == 0) ||
+             (inode_data->fstat.st_uid == getuid()) ||
+             (inode_data->fstat.st_gid == getgid()))
+    {
+
+        return 1;
+    }
+
+    else
+    {
+        return 0;
+    }
+}
+
 void split_func(char *local_pathname) {
 
 	char* ts1 = strdup(local_pathname);
@@ -508,24 +530,7 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
     return 0;
 }
 
-int CanUseInode (i_node *inode_data /*, int mode */)
-{
-    if (inode_data == NULL) {
-        return 0;
-    }
 
-    else if ((getuid() == 0) || 
-    		(getgid() == 0) ||
-        	(inode_data->fstat.st_uid == getuid()) ||
-        	(inode_data->fstat.st_gid == getgid())) {
-
-        return 1;
-    }
-
-    else {
-    	return 0;
-	}
-}
 
 
 
