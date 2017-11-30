@@ -48,19 +48,16 @@ extern struct nphfuse_state *nphfuse_data;
 
 int CanUseInode(i_node *inode_data /*, int mode */)
 {
-    if (inode_data == NULL)
-    {
+    if (inode_data == NULL){
         return 0;
     }
     else if ((getuid() == 0) ||
              (getgid() == 0) ||
              (inode_data->fstat.st_uid == getuid()) ||
-             (inode_data->fstat.st_gid == getgid()))
-    {
+             (inode_data->fstat.st_gid == getgid())){
         return 1;
     }
-    else
-    {
+    else{
         return 0;
     }
 }
@@ -553,11 +550,10 @@ int nphfuse_open(const char *path, struct fuse_file_info *fi)
  	if (my_flag != 1) return -EACCES;
 
  	// MORE Changes Can be Made here!!! 
-
  	fi->fh = inode_data->fstat.st_ino;
  	gettimeofday(&day_tm, NULL);
  	inode_data->fstat.st_atime = day_tm.tv_sec;
- 	npheap_lock (npheap_fd, inode_data->offset);
+ 	//npheap_lock (npheap_fd, inode_data->offset);
  	return 0;
 }
 
