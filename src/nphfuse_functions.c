@@ -294,8 +294,8 @@ void mkdir_fstat_helper(i_node *temp_node, mode_t mode) {
     temp_node->fstat.st_atime = day_tm.tv_sec;
     temp_node->fstat.st_mtime = day_tm.tv_sec;
     temp_node->fstat.st_ctime = day_tm.tv_sec;
-    
-    return temp_node;
+
+    return;
 }
 
 /** Create a directory */
