@@ -366,7 +366,6 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
 
 
     if (npheap_getsize(npheap_fd, data_offset) != 0) {
-        /* Expected offset not available */
         memset(inode_data, 0, sizeof(i_node));
         inode_num = inode_num - 1;
         return -ENOSPC;
@@ -770,8 +769,7 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
         log_msg("\nreaddir before %d %d\n", block_entries, sizeof(i_node));
         //inode_data = (i_node *) data_array[offset];
         log_msg("\nreaddir after access : %p\n", inode_data);
-        for (int i = 0; i < 16; i++)
-        {
+        for (int i = 0; i < 16; i++){
             if ((!strcmp(inode_data[i].dir_name, path)) &&
                 (strcmp(inode_data[i].file_name, "/"))){
                 log_msg("\nreaddir before memset\n");
