@@ -969,7 +969,7 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
 
         //log_msg("\nreaddir before %d %d\n", block_entries, sizeof(i_node));
         //inode_data = (i_node *) data_array[offset];
-        log_msg("\nreaddir after access : %p\n", inode_data);
+        log_msg("\nreaddir after access : %p\n", path);
         for (int i = 0; i < 16; i++){
             if ((!strcmp(inode_data[i].dir_name, path)) &&
                 (strcmp(inode_data[i].file_name, "/"))){
