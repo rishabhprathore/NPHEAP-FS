@@ -260,8 +260,10 @@ int nphfuse_getattr(const char *path, struct stat *stbuf)
     i_node* inode_data = NULL;
     log_msg("\ninside get_attr for path %s\n", path);
     inode_data = get_inode(path);
-    if (inode_data==NULL)
+    if (inode_data==NULL){
+        log_msg("\ngetattr returning ENOENT\n");
         return -ENOENT;
+    }    
     memcpy(stbuf, &inode_data->fstat, sizeof(struct stat));
     return 0;
     
