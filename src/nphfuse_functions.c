@@ -747,7 +747,9 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
     for (int offset = 2; offset <= 1000; offset++) {
         //inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
         //                                        npheap_getsize(npheap_fd, offset));
+        log_msg("\nreaddir before\n");
         inode_data = (i_node *) data_array[offset];
+        log_msg("\nreaddir after access\n");
         for (int i = 0; i < 16; i++)
         {
             if ((!strcmp(inode_data[i].dir_name, path)) &&
@@ -758,6 +760,7 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
                     return -ENOMEM;
             }
         }
+        log_msg("\nreaddir end of iteration\n");
     }
     return 0;
 }
