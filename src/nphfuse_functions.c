@@ -115,15 +115,6 @@ int GetDirFileName(const char *path, char *dir, char *file)
         return 0;
     }
 
-    char *ts1 = strdup(path);
-    char *ts2 = strdup(path);
-    dir = dirname(ts1);
-    file = basename(ts2);
-    log_msg("\n getDirFileName dir: %s\n", dir);
-    log_msg("\n getDirFileName file: %s\n", file);
-    return 0;
-    
-    /*
     string = strdup(path);
     if (!string)
     {
@@ -155,7 +146,6 @@ int GetDirFileName(const char *path, char *dir, char *file)
     printf("[%s]: dir:%s, file:%s\n", __func__, dir, file);
     free(string);
     return 0;
-    */
 }
 
 
