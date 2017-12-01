@@ -107,13 +107,6 @@ int GetDirFileName(const char *path, char *dir, char *file)
     }
     memset(dir, 0, 224);
     memset(file, 0, 128);
-    char *ts1 = strdup(path);
-    char *ts2 = strdup(path);
-    dir = dirname(ts1);
-    file = basename(ts2);
-    log_msg("\n getDirFileName dir: %s\n", dir);
-    log_msg("\n getDirFileName file: %s\n", file);
-    /*
     if (!strcmp(path, "/"))
     {
         strcpy(dir, "/");
@@ -122,6 +115,15 @@ int GetDirFileName(const char *path, char *dir, char *file)
         return 0;
     }
 
+    char *ts1 = strdup(path);
+    char *ts2 = strdup(path);
+    dir = dirname(ts1);
+    file = basename(ts2);
+    log_msg("\n getDirFileName dir: %s\n", dir);
+    log_msg("\n getDirFileName file: %s\n", file);
+    return 0;
+    
+    /*
     string = strdup(path);
     if (!string)
     {
