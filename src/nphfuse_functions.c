@@ -476,6 +476,7 @@ int nphfuse_unlink(const char *path)
     }
     else {
     log_msg("\nunlink before memset for path: %s\n", path);
+    data_array[inode_data->offset] == NULL;
     memset(inode_data, 0, sizeof(inode_data));
     return 0;
     }
