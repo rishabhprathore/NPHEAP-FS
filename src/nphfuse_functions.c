@@ -156,14 +156,7 @@ static i_node *get_root_inode(void)
     i_node *test_inode = NULL;
     log_msg("\nget_root_inode()  called %d", npheap_getsize(npheap_fd, 2));
     //root_inode = (i_node *)npheap_alloc(npheap_fd, 2,npheap_getsize(npheap_fd, 2));
-    root_inode = (i_node *) data_array[2];
-
-    if (!root_inode)
-    {
-        log_msg("\nRoot directory inode info not found!!\n");
-        return NULL;
-    }
-    
+    root_inode = (i_node *) data_array[2];    
     test_inode= &root_inode[0];
     log_msg("\ncheck in test_inode\n");
     log_msg("\n test_inode links- %d, size - %d",
@@ -184,11 +177,13 @@ static i_node *get_inode(const char *path){
 }    
 
     if (GetDirFileName(path, dir_name, file_name) != 0){
+        log_msg("\ndirfinename failed!!!\n")
         return NULL;
     }
 
     for (offset = 2; offset < 1000; offset++){
         inode_data = (i_node *)npheap_alloc(npheap_fd, offset, 8192);
+        //inode_data = (i_node *) data_array[offset];
         if (inode_data==0){
             log_msg("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
             return NULL;}
