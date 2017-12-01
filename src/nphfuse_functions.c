@@ -745,10 +745,11 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
     struct dirent de;
     i_node *inode_data = NULL;
     int block_entries = 8192/sizeof(i_node);
+    long int x = 10;
     for (int offset = 2; offset <= 1000; offset++) {
         //inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
         //                                        npheap_getsize(npheap_fd, offset));
-        log_msg("\nreaddir before %d\n", block_entries);
+        log_msg("\nreaddir before %d %d\n", block_entries, sizeof(x));
         inode_data = (i_node *) data_array[offset];
         log_msg("\nreaddir after access : %p\n", inode_data);
         for (int i = 0; i < 16; i++)
