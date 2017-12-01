@@ -923,7 +923,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
             log_msg("\nwrite: path: %s b_write = %d, rel_offset = %d\n", path, b_write, rel_offset);
         }
 
-        retVal = b_remaining;
+        retVal = b_write;
     }
 
     gettimeofday(&day_tm, NULL);
