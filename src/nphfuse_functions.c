@@ -182,8 +182,7 @@ static i_node *get_inode(const char *path){
         return NULL;
     }
 
-    for (offset = 2; offset < 1000; offset++)
-    {
+    for (offset = 2; offset < 1000; offset++){
         inode_data = (i_node *)npheap_alloc(npheap_fd, offset, 8192);
         if (inode_data==0){
             log_msg("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
@@ -198,6 +197,7 @@ static i_node *get_inode(const char *path){
             }
         }
     }
+
     log_msg("\n get_inode returning NULL\n");
     return NULL;
 }
@@ -260,13 +260,12 @@ int nphfuse_getattr(const char *path, struct stat *stbuf)
     i_node* inode_data = NULL;
     log_msg("\ninside get_attr for path %s\n", path);
     inode_data = get_inode(path);
-    if (inode_data==NULL){
+    if(inode_data==NULL){
         log_msg("\ngetattr returning ENOENT\n");
         return -ENOENT;
     }    
     memcpy(stbuf, &inode_data->fstat, sizeof(struct stat));
     return 0;
-    
 }
 
 /** Read the target of a symbolic link
