@@ -570,7 +570,7 @@ int nphfuse_chown(const char *path, uid_t uid, gid_t gid)
     }
 
     if (inode_data == NULL) {	log_msg("\nInside chown(). inode_data is NULL."); 	return -ENOENT;	}
-	else if (CanUseInode(inode_data) != 1) {	log_msg("\nInside utime(). Access not allowed\n");    return -EACCES; }
+	else if (CanUseInode(inode_data) != 1) {	log_msg("\nInside chown(). Access not allowed\n");    return -EACCES; }
     else {
     	inode_data->fstat.st_uid = uid;
     	gettimeofday(&tv, NULL);
