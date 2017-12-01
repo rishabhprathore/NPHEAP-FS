@@ -589,7 +589,7 @@ int nphfuse_chmod(const char *path, mode_t mode)
     if (inode_data == NULL) {	log_msg("\nInside chmod(). inode_data is NULL."); 	return -ENOENT;	}
 	else if (CanUseInode(inode_data) != 1) {	log_msg("\nInside chmod(). Access not allowed\n");    return -EACCES; }
     else {
-    	gettimeofday(&tv, NULL);
+    	gettimeofday(&day_tm, NULL);
 	    inode_data->fstat.st_ctime = day_tm.tv_sec;
 	    inode_data->fstat.st_mode = mode;
 	    return 0;
