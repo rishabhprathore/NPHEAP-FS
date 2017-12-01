@@ -523,7 +523,7 @@ int nphfuse_rename(const char *path, const char *newpath)
     if (inode_data==NULL)
         return -ENOENT;
 
-    if (CanUseInode(pInodeInfo) != 1) return -EACCES;
+    if (CanUseInode(inode_data) != 1) return -EACCES;
 
     if (GetDirFileName(newpath, dir_name, file_name) != 0)
         return -EINVAL;
@@ -596,7 +596,7 @@ int nphfuse_chown(const char *path, uid_t uid, gid_t gid)
 	else if (CanUseInode(inode_data) != 1) {	log_msg("\nInside utime(). Access not allowed\n");    return -EACCES; }
     else {
     	inode_data->fstat.st_uid = uid;
-    	gettimeofday(&tv, NULL);
+    	gettimeofday(&day_tm, NULL);
 	    inode_data->fstat.st_ctime = day_tm.tv_sec;
 	    inode_data->fstat.st_gid = gid;
 	    return 0;
