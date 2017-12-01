@@ -725,15 +725,18 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
     uint8_t *data_block = NULL;
     size_t data_size = 0;
     struct timeval day_tm;
-    int retVal = 0;
+    
     size_t b_read = 0;
     size_t b_remaining = size;
     size_t read_offset = offset;
     size_t rel_offset = 0;
+    
+
+    int ret = 0;
+
     uint8_t pos = 0;
     uint8_t *next_data = NULL;
     __u64 cur_npheap_offset = 0;
-
 
     inode_data = get_inode(path);
     if (inode_data==NULL) return -ENOENT;
@@ -782,13 +785,13 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
             log_msg("\nread: path: %s b_read = %d, rel_offset = %d\n", path, b_read, rel_offset);
             }
 
-        retVal = b_read;
+        //ret = b_read;
     }
 
     gettimeofday(&day_tm, NULL);
     inode_data->fstat.st_atime = day_tm.tv_sec;
 
-    return retVal;
+    return b_read;
 }
 
 /** Write data to an open file
