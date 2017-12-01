@@ -931,27 +931,6 @@ int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
     return 0;
 }
 
-/** Read directory
- *
- * This supersedes the old getdir() interface.  New applications
- * should use this.
- *
- * The filesystem may choose between two modes of operation:
- *
- * 1) The readdir implementation ignores the offset parameter, and
- * passes zero to the filler function's offset.  The filler
- * function will not return '1' (unless an error happens), so the
- * whole directory is read in a single readdir operation.  This
- * works just like the old getdir() method.
- *
- * 2) The readdir implementation keeps track of the offsets of the
- * directory entries.  It uses the offset parameter and always
- * passes non-zero offset to the filler function.  When the buffer
- * is full (or an error happens) the filler function will return
- * '1'.
- *
- * Introduced in version 2.3
- */
 
 int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset,
 	       struct fuse_file_info *fi)
@@ -959,7 +938,7 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
     struct dirent de;
     i_node *inode_data = NULL;
     int block_entries = 8192/sizeof(i_node);
-    long int x = 10;
+    log_msg("\nreaddir for path: %s\n", path);
     for (int offset = 2; offset < 1000; offset++) {
         //inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
         //                                        npheap_getsize(npheap_fd, offset));
@@ -967,19 +946,20 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
 
         //log_msg("\nreaddir before %d %d\n", block_entries, sizeof(i_node));
         //inode_data = (i_node *) data_array[offset];
-        log_msg("\nreaddir after access : %p\n", path);
+        //log_msg("\nreaddir after access : %p\n", path);
         for (int i = 0; i < 16; i++){
             if ((!strcmp(inode_data[i].dir_name, path)) &&
                 (strcmp(inode_data[i].file_name, "/"))){
-                log_msg("\nreaddir before memset filename:%s\n", 
-                inode_data[i].file_name);
+                //log_msg("\nreaddir before memset filename:%s\n", 
+                //inode_data[i].file_name);
+                log_msg("\nreaddir found : %s\n", inode_data[i].file_name);
                 memset(&de, 0, sizeof(de));
                 strcpy(de.d_name, inode_data[i].file_name);
                 if (filler(buf, de.d_name, NULL, 0) != 0)
                     return -ENOMEM;
             }
         }
-        log_msg("\nreaddir end of iteration\n");
+        //log_msg("\nreaddir end of iteration\n");
     }
     return 0;
 }
