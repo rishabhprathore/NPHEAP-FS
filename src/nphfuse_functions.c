@@ -755,7 +755,7 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
 
     log_msg("\n read: path: %s inode->filename: %s inode->offset: %d \n", path, inode_data->file_name, inode_data->offset);
 
-    b_read = size;
+    b_remaining = size;
     read_offset = offset;
     while (b_remaining){
         /* Get data block according to offset */
