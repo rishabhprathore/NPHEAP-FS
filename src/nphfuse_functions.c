@@ -107,7 +107,13 @@ int GetDirFileName(const char *path, char *dir, char *file)
     }
     memset(dir, 0, 224);
     memset(file, 0, 128);
-
+    char *ts1 = strdup(path);
+    char *ts2 = strdup(path);
+    dir = dirname(ts1);
+    file = basename(ts2);
+    log_msg("\n getDirFileName dir: %s\n", dir);
+    log_msg("\n getDirFileName file: %s\n", file);
+    /*
     if (!strcmp(path, "/"))
     {
         strcpy(dir, "/");
@@ -147,6 +153,7 @@ int GetDirFileName(const char *path, char *dir, char *file)
     printf("[%s]: dir:%s, file:%s\n", __func__, dir, file);
     free(string);
     return 0;
+    */
 }
 
 
@@ -726,7 +733,6 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
     size_t npHeapSize = 0;
     struct timeval day_tm;
     int retVal = 0;
-
     size_t b_read = 0;
     size_t b_remaining = 0;
     size_t read_offset = 0;
@@ -744,9 +750,6 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
     npHeapSize = npheap_getsize(npheap_fd, inode_data->offset);
     if (npHeapSize == 0) return 0;
 
-#if 0
-    pDataBlock = npheap_alloc (npHeapFd, pInodeInfo->offset, npHeapSize);
-#endif
     data_block = data_array[inode_data->offset];
     if (data_block==NULL){
         log_msg("read: Failed to fetch allocated block for offset:%ld\n", offset);
