@@ -772,10 +772,10 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
             return -ENOENT;
         }
 
-        npHeapSize = npheap_getsize(npHeapFd, cur_npheap_offset);
+        npHeapSize = npheap_getsize(npheap_fd, cur_npheap_offset);
         if (npHeapSize == 0)
         {
-            printf("npHeapSize = 0 for offset:%llu\n", currNpOffset);
+            printf("npHeapSize = 0 for offset:%llu\n", cur_npheap_offset);
             return -EINVAL;
         }
 
