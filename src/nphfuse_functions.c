@@ -816,7 +816,7 @@ int nphfuse_access(const char *path, int mask)
 
     if (inode_data == NULL) {return -ENOENT;}
     else if (CanUseInode (inode_data) != 1) {return -EACCES;}
-    else {return 0};
+    else {return 0;}
 }
 
 /**
