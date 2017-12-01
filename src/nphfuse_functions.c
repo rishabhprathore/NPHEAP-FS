@@ -68,7 +68,7 @@ void split_func(char *local_pathname)
     return;
 }
 
-void path_name(char *fullpath)
+void n_path_name(char *fullpath)
 {
 
     char *pos = NULL;
