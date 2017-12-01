@@ -484,7 +484,20 @@ int nphfuse_unlink(const char *path)
 /** Remove a directory */
 int nphfuse_rmdir(const char *path)
 {
-    return -1;
+    i_node *inode_data = NULL;
+
+    inode_data = get_inode(path);
+    if (inode_data == NULL){
+        return -ENOENT;
+    }
+
+    if (CanUseInode(pInodeInfo) != 1)
+    {
+        return -EACCES;
+    }
+
+    memset(inode_data, 0, sizeof(i_node));
+    return 0;
 }
 
 /** Create a symbolic link */
@@ -1022,7 +1035,7 @@ int nphfuse_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_in
     	t_inode_data = (i_node *) data_array[offset];
 
         if (t_inode_data==0){
-            printf("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
+            log_msg("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
             inode_data = NULL;
         }
 
