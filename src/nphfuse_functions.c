@@ -817,8 +817,118 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
 int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
 	     struct fuse_file_info *fi)
 {
-    return -ENOENT;
+    i_node *inode_data = NULL;
+    uint8_t *data_block = NULL;
+    uint8_t *temp = NULL;
+    size_t npHeapSize = 0;
+    int retVal = 0;
+    struct timeval day_tm;
+
+    inode_data = get_inode(path);
+    if (inode_data == NULL)
+    {
+        return -ENOENT;
+    }
+
+    if (CanUseInode(pInodeInfo) != 1)
+    {
+        return -EACCES;
+    }
+
+    npHeapSize = npheap_getsize(npheap_fd, inode_data->offset);
+    if (npHeapSize == 0){
+        return 0;
+    }
+
+#if 0
+    pDataBlock = npheap_alloc (npHeapFd, pInodeInfo->offset, npHeapSize);
+#endif
+    data_block = data_array[inode_data->offset];
+    if (data_block==NULL){
+        log_msg("Failed to fetch allocated block for offset:%lu\n",
+               inode_data->offset);
+        return -ENOENT;
+    }
+
+    size_t b_write = 0;
+    size_t b_remaining = 0;
+    size_t write_offset = 0;
+    size_t rel_offset = 0;
+    uint8_t pos = 0;
+    uint8_t *next_data_block = NULL;
+    __u64 cur_npheap_offset = 0;
+
+    b_remaining = size;
+    write_offset = offset;
+    while (b_remaining){
+        /* Get data block according to offset */
+        pos = write_offset / 8192;
+        cur_npheap_offset = inode_data->offset;
+        while (pos){
+            cur_npheap_offset = data_next[cur_npheap_offset - 1000];
+            pos = pos-1;
+        }
+
+        /* NP Heap offset retrieved where data is to be written */
+        data_block = data_array[cur_npheap_offset];
+        if (data_block == NULL)
+        {
+            log_msg("Failed to fetch allocated block for offset:%llu\n",
+                   data_next[cur_npheap_offset]);
+            return -ENOENT;
+        }
+
+        npHeapSize = npheap_getsize(npheap_fd, cur_npheap_offset);
+        if (npHeapSize == 0)
+        {
+            log_msg("npHeapSize = 0 for offset:%llu\n", cur_npheap_offset);
+            return -EINVAL;
+        }
+
+        rel_offset = write_offset % 8192;
+        if (npHeapSize <= b_remaining + rel_offset)
+        {
+            /* Allocate new NP Heap offset for data */
+            next_data_block = npheap_alloc(npheap_fd, data_offset, 8192);
+            if (next_data_block == NULL){
+                log_msg("Failed to allocate block for offset:%llu\n", data_offset);
+                return -ENOMEM;
+            }
+
+            data_array[data_offset] = next_data_block;
+            data_next[cur_npheap_offset - 1000] = data_offset++;
+            memset(next_data_block, 0,
+                   npheap_getsize(npheap_fd, data_next[cur_npheap_offset -
+                                                        1000]));
+
+            memcpy(data_block + rel_offset, buf + b_write,
+                   npHeapSize - rel_offset);
+
+            write_offset += (npHeapSize - rel_offset);
+            b_write += (npHeapSize - rel_offset);
+            b_remaining -= (npHeapSize - rel_offset);
+        }
+        else
+        {
+            memcpy(data_block + rel_offset, buf + b_write,
+                   b_remaining);
+            write_offset += b_remaining;
+            b_write += b_remaining;
+            b_remaining = 0;
+        }
+
+        retVal = b_remaining;
+    }
+
+    gettimeofday(&day_tm, NULL);
+    inode_data->fstat.st_atime = day_tm.tv_sec;
+    inode_data->fstat.st_mtime = day_tm.tv_sec;
+    inode_data->fstat.st_ctime = day_tm.tv_sec;
+    inode_data->fstat.st_size += retVal;
+
+    return retVal;
 }
+
 
 void statfs_helper(i_node *t_inode_data, struct statvfs *statv) {
 
