@@ -198,7 +198,7 @@ static i_node *get_inode(const char *path){
             }
         }
     }
-    log_msg("\n get_inode returning NULL\n")
+    log_msg("\n get_inode returning NULL\n");
     return NULL;
 }
 
@@ -250,7 +250,7 @@ static void npheap_fs_init(void)
     root_inode->fstat.st_size = npheap_getsize(npheap_fd, 1);
     root_inode->fstat.st_uid = getuid();
     root_inode->fstat.st_gid = getgid();
-    root_inode = get_root_inode();
+    //root_inode = get_root_inode();
     return;
 }
 
@@ -782,18 +782,18 @@ int nphfuse_fsyncdir(const char *path, int datasync, struct fuse_file_info *fi)
 
 int nphfuse_access(const char *path, int mask)
 {
-    i_node inode_data = NULL;
+    i_node *inode_data = NULL;
     i_node *t_inode_data = NULL;
     char dir_name[224];
     char file_name[128];
     __u64 offset = 0;
     int i = 0;
 
-    if (strcmp(path, "/")==0) 
-        return get_root_inode();
+    if (strcmp(path, "/")==0)
+        inode_data = get_root_inode();
 
     if (GetDirFileName(path, dir_name, file_name) != 0) {
-        return NULL;
+        inode_data = NULL;
     }
 
     for (offset = 2; offset < 1000; offset++)
@@ -801,7 +801,8 @@ int nphfuse_access(const char *path, int mask)
         t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset, 8192);
         if (t_inode_data==0){
             printf("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
-            return NULL;}
+            inode_data = NULL;
+        }
 
         for (i = 0; i < 16; i++){
             if ((strcmp(t_inode_data[i].dir_name, dir_name)==0) &&
@@ -856,11 +857,11 @@ int nphfuse_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_in
     __u64 offset = 0;
     int i = 0;
 
-    if (strcmp(path, "/")==0) 
-        return get_root_inode();
+    if (strcmp(path, "/")==0)
+        inode_data = get_root_inode();
 
     if (GetDirFileName(path, dir_name, file_name) != 0) {
-        return NULL;
+        inode_data = NULL;
     }
 
     for (offset = 2; offset < 1000; offset++)
@@ -868,7 +869,8 @@ int nphfuse_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_in
         t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset, 8192);
         if (t_inode_data==0){
             printf("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
-            return NULL;}
+            inode_data = NULL;
+        }
 
         for (i = 0; i < 16; i++){
             if ((strcmp(t_inode_data[i].dir_name, dir_name)==0) &&
