@@ -477,6 +477,7 @@ int nphfuse_unlink(const char *path)
         log_msg("\nunlink: deleting offset %d \n", inode_data->offset);
         npheap_delete(npheap_fd, inode_data->offset);
     }
+    log_msg("\nunlink before memset for path: %s\n", path);
     memset(inode_data, 0, sizeof(inode_data));
     return 0;
 }
