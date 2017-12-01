@@ -465,21 +465,22 @@ int nphfuse_unlink(const char *path)
     i_node* inode_data = NULL;
     log_msg("\nunlink: %s \n", path);
     inode_data = get_inode(path);
-    if (inode_data == NULL) {
-        log_msg("\nInside rmdir(). inode_data is NULL\n");
+    if (inode_data == NULL){
         return -ENOENT;
     }
-    else if (CanUseInode(inode_data) != 1) {  log_msg("\nInside unlink(). Access not allowed\n");    return -EACCES; }
-    else if (npheap_getsize(npheap_fd, inode_data->offset) != 0) {
+
+    if (CanUseInode(inode_data) != 1){
+        return -EACCES;
+    }
+
+    if (npheap_getsize(npheap_fd, inode_data->offset) != 0){
         log_msg("\nunlink: deleting offset %d \n", inode_data->offset);
         npheap_delete(npheap_fd, inode_data->offset);
     }
-    else {
     log_msg("\nunlink before memset for path: %s\n", path);
     data_array[inode_data->offset] == NULL;
     memset(inode_data, 0, sizeof(inode_data));
     return 0;
-    }
 }
 
 /** Remove a directory */
@@ -491,7 +492,7 @@ int nphfuse_rmdir(const char *path)
         log_msg("\nInside rmdir(). inode_data is NULL\n");
         return -ENOENT;
     }
-    else if (CanUseInode(inode_data) != 1) {  log_msg("\nInside rmdir(). Access not allowed\n");    return -EACCES; }
+    else if (CanUseInode(inode_data) != 1) {	log_msg("\nInside rmdir(). Access not allowed\n");    return -EACCES; }
     else {
     memset(inode_data, 0, sizeof(i_node));
     return 0;
@@ -717,7 +718,93 @@ int nphfuse_open(const char *path, struct fuse_file_info *fi)
 // returned by read.
 int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
-    return -ENOENT;
+    i_node *inode_data = NULL;
+    uint8_t *data_block = NULL;
+    size_t npHeapSize = 0;
+    struct timeval day_tm;
+    int retVal = 0;
+
+    size_t b_read = 0;
+    size_t b_remaining = 0;
+    size_t read_offset = 0;
+    size_t rel_offset = 0;
+    uint8_t pos = 0;
+    uint8_t *next_data = NULL;
+    __u64 cur_npheap_offset = 0;
+
+
+    inode_data = get_inode(path);
+    if (inode_data==NULL) return -ENOENT;
+
+    if (CanUseInode(inode_data) != 1) return -EACCES;
+
+    npHeapSize = npheap_getsize(npheap_fd, inode_data->offset);
+    if (npHeapSize == 0) return 0;
+
+#if 0
+    pDataBlock = npheap_alloc (npHeapFd, pInodeInfo->offset, npHeapSize);
+#endif
+    data_block = data_array[inode_data->offset];
+    if (data_block==NULL){
+        log_msg("read: Failed to fetch allocated block for offset:%ld\n", offset);
+        return -ENOENT;
+    }
+
+   
+
+    b_read = size;
+    read_offset = offset;
+    while (b_remaining){
+        /* Get data block according to offset */
+        pos = read_offset / 8192;
+        cur_npheap_offset = inode_data->offset;
+        while (pos){
+            cur_npheap_offset = data_next[cur_npheap_offset - 1000];
+            pos = pos-1;
+        }
+
+        /* NP Heap offset retrieved where data is to be written */
+        data_block = data_array[cur_npheap_offset];
+        if (!data_block)
+        {
+            log_msg("Failed to fetch allocated block for offset:%llu\n",
+                   data_next[cur_npheap_offset]);
+            return -ENOENT;
+        }
+
+        npHeapSize = npheap_getsize(npHeapFd, cur_npheap_offset);
+        if (npHeapSize == 0)
+        {
+            printf("npHeapSize = 0 for offset:%llu\n", currNpOffset);
+            return -EINVAL;
+        }
+
+        rel_offset = read_offset % 8192;
+        if (npHeapSize <= b_remaining + rel_offset)
+        {
+            memcpy(buf + b_read, data_block + rel_offset,
+                   npHeapSize - rel_offset);
+
+            read_offset += (npHeapSize - rel_offset);
+            b_read += (npHeapSize - rel_offset);
+            b_remaining -= (npHeapSize - rel_offset);
+        }
+        else
+        {
+            memcpy(buf + b_read, data_block + rel_offset,
+                   b_remaining);
+            read_offset += b_remaining;
+            b_read += b_remaining;
+            b_remaining = 0;
+        }
+
+        retVal = b_read;
+    }
+
+    gettimeofday(&day_tm, NULL);
+    inode_data->fstat.st_atime = day_tm.tv_sec;
+
+    return retVal;
 }
 
 /** Write data to an open file
@@ -937,7 +1024,6 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
 {
     struct dirent de;
     i_node *inode_data = NULL;
-    int block_entries = 8192/sizeof(i_node);
     log_msg("\nreaddir for path: %s\n", path);
     for (int offset = 2; offset < 1000; offset++) {
         //inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
