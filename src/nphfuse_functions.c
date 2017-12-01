@@ -818,6 +818,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
 	     struct fuse_file_info *fi)
 {
     log_msg("\nwrite: path: %s size = %d, offset = %d\n",path, size, offset);
+    log_msg("\nwrite: buf: %s \n", buf);
     i_node *inode_data = NULL;
     uint8_t *data_block = NULL;
     uint8_t *temp = NULL;
