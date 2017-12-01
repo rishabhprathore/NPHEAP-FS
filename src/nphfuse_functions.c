@@ -28,7 +28,9 @@ int npheap_fd = 0;
 uint64_t inode_num = 2;
 uint64_t data_offset = 1000;
 
-uint8_t *data_array[10999]; 
+uint8_t *data_array[10999];
+uint64_t data_next[10000];
+
 ///////////////////////////////////////////////////////////
 //
 // Prototypes for all these functions, and the C-style comments,
@@ -153,7 +155,9 @@ static i_node *get_root_inode(void)
     i_node *root_inode = NULL;
     i_node *test_inode = NULL;
     log_msg("\nget_root_inode()  called %d", npheap_getsize(npheap_fd, 2));
-    root_inode = (i_node *)npheap_alloc(npheap_fd, 2,npheap_getsize(npheap_fd, 2));
+    //root_inode = (i_node *)npheap_alloc(npheap_fd, 2,npheap_getsize(npheap_fd, 2));
+    root_inode = (i_node *) data_array[2];
+
     if (!root_inode)
     {
         log_msg("\nRoot directory inode info not found!!\n");
@@ -214,29 +218,39 @@ static void npheap_fs_init(void)
     npheap_fd = open(nphfuse_data->device_name, O_RDWR);
     // allocate offset 0 in npheap for superblock
     log_msg("\n npheap fd  %d\n", npheap_fd);
+    memset(data_array, 0, sizeof(uint8_t *) *10999);
+    memset(&data_next, 0, sizeof(data_next));
     if(npheap_getsize(npheap_fd, 1) == 0){
         log_msg("\n inside superblock allocation\n");
         block_data = npheap_alloc(npheap_fd, 1, 8192);
-        if (block_data == NULL)
-        {
-            printf("Failed to allocate npheap memory to offset: 0");
+        if (block_data == NULL){
+            printf("Failed to allocate npheap memory to offset: 1");
             return;
             }
             memset(block_data, 0, npheap_getsize(npheap_fd, 1));
         }
-        log_msg("\n Superblock size %d\n", npheap_getsize(npheap_fd, 1));
-        log_msg("check");
-        for (offset = 2; offset < 1000; offset++)
+    else {
+        block_data = npheap_alloc(npHeapFd, offset,
+                                  npheap_getsize(npHeapFd, offset));
+    }
+    data_array[1] = block_data;
+    log_msg("\n Superblock size %d\n", npheap_getsize(npheap_fd, 1));
+
+    for (offset = 2; offset < 1000; offset++)
+    {
+        //log_msg("\n before alloc offset: %d-> %d\n",
+        //        offset, npheap_getsize(npheap_fd, offset));
+        if (npheap_getsize(npheap_fd, offset) == 0)
         {
-            //log_msg("\n before alloc offset: %d-> %d\n",
-            //        offset, npheap_getsize(npheap_fd, offset));
-            if (npheap_getsize(npheap_fd, offset) == 0)
-            {
-                block_data = npheap_alloc(npheap_fd, offset, 8192);
-                memset(block_data, 0, npheap_getsize(npheap_fd, offset));
-                log_msg("\n inode size for offset: %d-> %d\n",
-                offset, npheap_getsize(npheap_fd, offset));
-            }
+            block_data = npheap_alloc(npheap_fd, offset, 8192);
+            memset(block_data, 0, npheap_getsize(npheap_fd, offset));
+            log_msg("\n inode size for offset: %d-> %d\n",
+                    offset, npheap_getsize(npheap_fd, offset));
+        }
+        else block_data = npheap_alloc(npheap_fd, offset,
+                                      npheap_getsize(npheap_fd, offset));
+
+        data_array[offset] = block_data;
     }
     //get info of root directory inode
     
