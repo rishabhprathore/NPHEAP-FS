@@ -817,6 +817,7 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
 int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
 	     struct fuse_file_info *fi)
 {
+    log_msg("\nwrite: size = %d, offset = %d\n", size, offset);
     i_node *inode_data = NULL;
     uint8_t *data_block = NULL;
     uint8_t *temp = NULL;
@@ -910,6 +911,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
         }
         else
         {
+            log_msg("\nwrite: before memcpy\n");
             memcpy(data_block + rel_offset, buf + b_write,
                    b_remaining);
             write_offset += b_remaining;
