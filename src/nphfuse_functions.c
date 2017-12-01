@@ -416,7 +416,6 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     i_node *t_inode_data = NULL;
     char dir_name[224];
     char file_name[128];
-    struct timeval day_tm;
     int offset =0;
     int i=0;
     int check = 0;
@@ -449,20 +448,7 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     log_msg("\n before file_name copy!\n");
     strcpy(inode_data->file_name, file_name);
     log_msg("\n after file_name copy!\n");
-
-/*
-    inode_data->fstat.st_ino = inode_num++;
-    inode_data->fstat.st_mode = S_IFDIR | mode;
-    inode_data->fstat.st_nlink = 2;
-    inode_data->fstat.st_size = 8192;
-    inode_data->fstat.st_uid = getuid();
-    inode_data->fstat.st_gid = getgid();
-
-    gettimeofday(&day_tm, NULL);
-    inode_data->fstat.st_atime = day_tm.tv_sec;
-    inode_data->fstat.st_mtime = day_tm.tv_sec;
-    inode_data->fstat.st_ctime = day_tm.tv_sec;
-*/
+   
     mkdir_fstat_helper(inode_data, mode);
     log_msg("\nbefore return %d \n", inode_data->fstat.st_ino);
     return 0;
