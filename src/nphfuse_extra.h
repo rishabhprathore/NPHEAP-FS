@@ -27,10 +27,10 @@
 #define DIR_MAX 224
 
 typedef struct i_node{
-	struct  stat fstat;
-	char 		 file_name[FILE_MAX];
-  char		 dir_name[DIR_MAX];
+  struct  stat fstat;
   uint64_t offset;
+  char 		 file_name[FILE_MAX];
+  char		 dir_name[DIR_MAX];
   long int		 pad;	
 } i_node;
 
