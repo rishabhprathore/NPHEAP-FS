@@ -177,7 +177,7 @@ static i_node *get_inode(const char *path){
 }    
 
     if (GetDirFileName(path, dir_name, file_name) != 0){
-        log_msg("\ndirfinename failed!!!\n")
+        log_msg("\ndirfinename failed!!!\n");
         return NULL;
     }
 
