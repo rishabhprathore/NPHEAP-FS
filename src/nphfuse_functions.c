@@ -749,11 +749,12 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
         //                                        npheap_getsize(npheap_fd, offset));
         log_msg("\nreaddir before\n");
         inode_data = (i_node *) data_array[offset];
-        log_msg("\nreaddir after access\n");
+        log_msg("\nreaddir after access : %p\n", inode_data);
         for (int i = 0; i < 16; i++)
         {
             if ((!strcmp(inode_data[i].dir_name, path)) &&
                 (strcmp(inode_data[i].file_name, "/"))){
+                log_msg("\nreaddir before memset\n");
                 memset(&de, 0, sizeof(de));
                 strcpy(de.d_name, inode_data[i].file_name);
                 if (filler(buf, de.d_name, NULL, 0) != 0)
