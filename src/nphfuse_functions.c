@@ -460,7 +460,23 @@ int nphfuse_mkdir(const char *path, mode_t mode)
 /** Remove a file */
 int nphfuse_unlink(const char *path)
 {
-    return -1;
+    i_node* inode_data = NULL;
+    log_msg("\nunlink: %s \n", path);
+    inode_data = get_inode(path);
+    if (inode_data == NULL){
+        return -ENOENT;
+    }
+
+    if (CanUseInode(inode_data) != 1){
+        return -EACCES;
+    }
+
+    if (npheap_getsize(npheap_fd, inode_data->offset) != 0){
+        log_msg("\nunlink: deleting offset %d \n", inode_data->offset);
+        npheap_delete(npheap_fd, inode_data->offset);
+    }
+    memset(inode_data, 0, sizeof(inode_data));
+    return 0;
 }
 
 /** Remove a directory */
