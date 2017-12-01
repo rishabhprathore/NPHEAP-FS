@@ -718,6 +718,9 @@ int nphfuse_open(const char *path, struct fuse_file_info *fi)
 // returned by read.
 int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
+    log_msg("\n read: path: %s size = %d, offset = %d\n", path, size, offset);
+    log_msg("\n read: buf: %s \n", buf);
+
     i_node *inode_data = NULL;
     uint8_t *data_block = NULL;
     size_t npHeapSize = 0;
@@ -750,7 +753,7 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
         return -ENOENT;
     }
 
-   
+    log_msg("\n read: path: %s inode->filename: %s inode->offset: %d \n", path, inode_data->file_name, inode_data->offset);
 
     b_read = size;
     read_offset = offset;
@@ -796,7 +799,9 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
             read_offset += b_remaining;
             b_read += b_remaining;
             b_remaining = 0;
-        }
+            log_msg("\nread: data_block:%p data:%s\n", data_block, buf);
+            log_msg("\nread: path: %s b_read = %d, rel_offset = %d\n", path, b_read, rel_offset);
+            }
 
         retVal = b_read;
     }
