@@ -177,7 +177,7 @@ static i_node *get_inode(const char *path){
 }    
 
     if (GetDirFileName(path, dir_name, file_name) != 0){
-        log_msg("\ndirfinename failed!!!\n")
+        log_msg("\ndirfinename failed!!!\n");
         return NULL;
     }
 
@@ -335,10 +335,12 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
     int i=0;
     int check = 0;
     
-    for (offset = 2; offset < 1000; offset++){
-        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
+    for (offset = 2; offset < 1000; offset++) {
+/*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
                                                 npheap_getsize(npheap_fd, offset));
-        for (i = 0; i < 16; i++){
+*/
+            t_inode_data = (i_node *) data_array[offset];
+            for (i = 0; i < 16; i++){
             if ((t_inode_data[i].dir_name[0] == '\0') &&
                 (t_inode_data[i].file_name[0] == '\0')){
                 inode_data = &t_inode_data[i];
