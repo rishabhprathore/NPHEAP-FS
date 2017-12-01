@@ -611,6 +611,38 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
     return -ENOENT;
 }
 
+void statfs_helper(i_node *t_inode_data, struct statvfs *statv) {
+
+	uint8_t     inuse_block_num = 0;
+	uint8_t     i = 0;
+	__u64       offset = 0;
+
+	for (offset = 2; offset < 1000; offset++) {
+
+		t_inode_data = (i_node *) data_array[offset];
+		for (i = 0; i < 16; i++)
+        {
+            if ((t_inode_data[i].dir_name[0] == '\0') &&
+                (t_inode_data[i].file_name[0] == '\0'))
+            {
+                continue;
+            }
+        }
+        inuse_block_num++;
+	}
+
+	statv->f_bsize = 1024;
+    statv->f_frsize = 1024;
+    statv->f_blocks = 7984;
+    statv->f_bfree = statv->f_blocks - ((inuse_block_num - 1)/2);
+    statv->f_bavail = statv->f_bfree;
+    statv->f_files = 15968;
+    statv->f_ffree = statv->f_files - inuse_block_num;
+    statv->f_favail = statv->f_ffree;
+
+    return;
+}
+
 /** Get file system statistics
  *
  * The 'f_frsize', 'f_favail', 'f_fsid' and 'f_flag' fields are ignored
@@ -620,7 +652,10 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
  */
 int nphfuse_statfs(const char *path, struct statvfs *statv)
 {
-    return -1;
+    i_node *inode_data = NULL;
+    memset (statv, 0, sizeof(struct statvfs));
+    statfs_helper(inode_data, statv);
+    return 0;
 }
 
 /** Possibly flush cached data
