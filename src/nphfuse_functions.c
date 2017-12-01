@@ -830,7 +830,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
         return -ENOENT;
     }
 
-    if (CanUseInode(pInodeInfo) != 1)
+    if (CanUseInode(inode_data) != 1)
     {
         return -EACCES;
     }
