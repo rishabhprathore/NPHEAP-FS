@@ -398,7 +398,7 @@ void mkdir_fstat_helper(i_node *temp_node, mode_t mode) {
     temp_node->fstat.st_mode = S_IFDIR | mode;
     temp_node->fstat.st_gid = getgid();
     temp_node->fstat.st_uid = getuid();
-    temp_node->fstat.st_size = 8192;
+    temp_node->fstat.st_size = 4096;
     temp_node->fstat.st_nlink = 2;
 
     gettimeofday(&day_tm, NULL);
