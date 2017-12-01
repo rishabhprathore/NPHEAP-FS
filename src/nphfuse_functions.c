@@ -378,6 +378,7 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
     }
 
     memset(localDBlock, 0, BLOCK_CAPACITY);
+    data_array[data_offset] = localDBlock;
     inode_data->offset = data_offset++;
 
     log_msg("\nbefore return %d \n", inode_data->fstat.st_ino);
