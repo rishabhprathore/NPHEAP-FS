@@ -830,8 +830,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
     {
         return -ENOENT;
     }
-    log_msg("\nwrite: path: %s inode->filename: %s
-     inode->offset: %d \n", path, inode_data->file_name, inode_data->offset);
+    log_msg("\nwrite: path: %s inode->filename: %s inode->offset: %d \n", path, inode_data->file_name, inode_data->offset);
 
     if (CanUseInode(inode_data) != 1)
     {
