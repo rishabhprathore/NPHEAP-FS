@@ -465,21 +465,20 @@ int nphfuse_unlink(const char *path)
     i_node* inode_data = NULL;
     log_msg("\nunlink: %s \n", path);
     inode_data = get_inode(path);
-    if (inode_data == NULL){
+    if (inode_data == NULL) {
+        log_msg("\nInside rmdir(). inode_data is NULL\n");
         return -ENOENT;
     }
-
-    if (CanUseInode(inode_data) != 1){
-        return -EACCES;
-    }
-
-    if (npheap_getsize(npheap_fd, inode_data->offset) != 0){
+    else if (CanUseInode(inode_data) != 1) {  log_msg("\nInside unlink(). Access not allowed\n");    return -EACCES; }
+    else if (npheap_getsize(npheap_fd, inode_data->offset) != 0) {
         log_msg("\nunlink: deleting offset %d \n", inode_data->offset);
         npheap_delete(npheap_fd, inode_data->offset);
     }
+    else {
     log_msg("\nunlink before memset for path: %s\n", path);
     memset(inode_data, 0, sizeof(inode_data));
     return 0;
+    }
 }
 
 /** Remove a directory */
@@ -491,7 +490,7 @@ int nphfuse_rmdir(const char *path)
         log_msg("\nInside rmdir(). inode_data is NULL\n");
         return -ENOENT;
     }
-    else if (CanUseInode(inode_data) != 1) {	log_msg("\nInside rmdir(). Access not allowed\n");    return -EACCES; }
+    else if (CanUseInode(inode_data) != 1) {  log_msg("\nInside rmdir(). Access not allowed\n");    return -EACCES; }
     else {
     memset(inode_data, 0, sizeof(i_node));
     return 0;
