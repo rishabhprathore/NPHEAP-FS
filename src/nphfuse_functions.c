@@ -107,6 +107,7 @@ int GetDirFileName(const char *path, char *dir, char *file)
     }
     memset(dir, 0, 224);
     memset(file, 0, 128);
+    
     if (!strcmp(path, "/"))
     {
         strcpy(dir, "/");
@@ -722,12 +723,12 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
 
     i_node *inode_data = NULL;
     uint8_t *data_block = NULL;
-    size_t npHeapSize = 0;
+    size_t data_size = 0;
     struct timeval day_tm;
     int retVal = 0;
     size_t b_read = 0;
-    size_t b_remaining = 0;
-    size_t read_offset = 0;
+    size_t b_remaining = size;
+    size_t read_offset = offset;
     size_t rel_offset = 0;
     uint8_t pos = 0;
     uint8_t *next_data = NULL;
@@ -739,53 +740,36 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
 
     if (CanUseInode(inode_data) != 1) return -EACCES;
 
-    npHeapSize = npheap_getsize(npheap_fd, inode_data->offset);
-    if (npHeapSize == 0) return 0;
+    data_size = npheap_getsize(npheap_fd, inode_data->offset);
+    //if (data_size == 0) return 0;
 
     data_block = data_array[inode_data->offset];
-    if (data_block==NULL){
-        log_msg("read: Failed to fetch allocated block for offset:%ld\n", offset);
-        return -ENOENT;
-    }
+    if (data_block==NULL) return -ENOENT;
 
     log_msg("\n read: path: %s inode->filename: %s inode->offset: %d \n", path, inode_data->file_name, inode_data->offset);
-
-    b_remaining = size;
-    read_offset = offset;
-    while (b_remaining){
-        /* Get data block according to offset */
+    while(b_remaining!=0){
         pos = read_offset / 8192;
         cur_npheap_offset = inode_data->offset;
-        while (pos){
+        while(pos!=0){
+            pos = pos - 1;
             cur_npheap_offset = data_next[cur_npheap_offset - 1000];
-            pos = pos-1;
         }
-
-        /* NP Heap offset retrieved where data is to be written */
         data_block = data_array[cur_npheap_offset];
-        if (!data_block)
-        {
-            log_msg("Failed to fetch allocated block for offset:%llu\n",
-                   data_next[cur_npheap_offset]);
-            return -ENOENT;
-        }
+        if (data_block==NULL) return -ENOENT;
 
-        npHeapSize = npheap_getsize(npheap_fd, cur_npheap_offset);
-        if (npHeapSize == 0)
-        {
-            printf("npHeapSize = 0 for offset:%llu\n", cur_npheap_offset);
+        data_size = npheap_getsize(npheap_fd, cur_npheap_offset);
+        if (data_size == 0)
             return -EINVAL;
-        }
 
         rel_offset = read_offset % 8192;
-        if (npHeapSize <= b_remaining + rel_offset)
+        if (data_size <= b_remaining + rel_offset)
         {
             memcpy(buf + b_read, data_block + rel_offset,
-                   npHeapSize - rel_offset);
+                   data_size - rel_offset);
 
-            read_offset += (npHeapSize - rel_offset);
-            b_read += (npHeapSize - rel_offset);
-            b_remaining -= (npHeapSize - rel_offset);
+            read_offset += (data_size - rel_offset);
+            b_read += (data_size - rel_offset);
+            b_remaining -= (data_size - rel_offset);
         }
         else
         {
