@@ -491,7 +491,7 @@ int nphfuse_rmdir(const char *path)
         return -ENOENT;
     }
 
-    if (CanUseInode(pInodeInfo) != 1)
+    if (CanUseInode(inode_data) != 1)
     {
         return -EACCES;
     }
