@@ -744,8 +744,8 @@ int nphfuse_release(const char *path, struct fuse_file_info *fi)
         }
     }
 
-    if (inode_data == NULL)		return -ENOENT;
-    else if (CanUseInode (inode_data) != 1)		return -EACCES;
+    if (inode_data == NULL)		{  log_msg("\nInside release(). inode_data is NULL\n");     return -ENOENT;    }
+    else if (CanUseInode (inode_data) != 1)     {   log_msg("\nInside release(). Access not allowed\n");    return -EACCES;     }
     else	return 0;
 }
 
