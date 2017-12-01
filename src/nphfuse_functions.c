@@ -326,6 +326,7 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
 {
 
     log_msg("inside mknod() for path: %s", path);
+    log_msg("\n\n mode: %x :::: dev: %x", mode, dev);
     char dir_name[224];
     char file_name[128];
     uint8_t *localDBlock = NULL;
