@@ -230,8 +230,8 @@ static void npheap_fs_init(void)
             memset(block_data, 0, npheap_getsize(npheap_fd, 1));
         }
     else {
-        block_data = npheap_alloc(npHeapFd, offset,
-                                  npheap_getsize(npHeapFd, offset));
+        block_data = npheap_alloc(npheap_fd, offset,
+                                  npheap_getsize(npheap_fd, offset));
     }
     data_array[1] = block_data;
     log_msg("\n Superblock size %d\n", npheap_getsize(npheap_fd, 1));
