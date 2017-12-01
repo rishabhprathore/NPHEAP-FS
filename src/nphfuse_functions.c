@@ -514,30 +514,30 @@ int nphfuse_symlink(const char *path, const char *link)
 // both path and newpath are fs-relative
 int nphfuse_rename(const char *path, const char *newpath)
 {
+    struct timeval day_tm;
     i_node *inode_data = NULL;
     char dir_name[224];
     char file_name[128];
-    struct timeval day_tm;
 
     inode_data = get_inode(path);
-    if (inode_data==NULL)
+    if (inode_data == NULL) {
+    	log_msg("\nInside rename(). inode_data is NULL\n");
         return -ENOENT;
-
-    if (CanUseInode(inode_data) != 1) return -EACCES;
-
-    if (GetDirFileName(newpath, dir_name, file_name) != 0)
-        return -EINVAL;
-
+    }
+    else if (CanUseInode(inode_data) != 1) {	log_msg("\nInside rename(). Access not allowed\n");    return -EACCES; }
+    else if (GetDirFileName(newpath, dir_name, file_name) != 0) { log_msg("\nInside rename(). Unable to get directory name or file name");	return -EINVAL;	}
+    else {    
     memset(inode_data->dir_name, 0, 224);
-    strncpy(inode_data->dir_name, dir_name, 224);
+    strcpy(inode_data->dir_name, dir_name);
 
     memset(inode_data->file_name, 0, 128);
-    strncpy(inode_data->file_name, file_name, 128);
+    strcpy(inode_data->file_name, file_name);
 
     gettimeofday(&day_tm, NULL);
     inode_data->fstat.st_ctime = day_tm.tv_sec;
 
     return 0;
+	}
 }
 
 /** Create a hard link to a file */
