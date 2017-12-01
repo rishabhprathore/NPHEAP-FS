@@ -94,6 +94,7 @@ void path_name(char *fullpath) {
 /* Private Functions */
 int GetDirFileName(const char *path, char *dir, char *file)
 {
+    log_msg("\nInside getdirfilename\n");
     char *string = NULL;
     char *ptr = NULL;
     char *prev = NULL;
@@ -836,7 +837,7 @@ int nphfuse_access(const char *path, int mask)
 int nphfuse_ftruncate(const char *path, off_t offset, struct fuse_file_info *fi)
 {
     return -1;
-    
+
 }
 
 /**
