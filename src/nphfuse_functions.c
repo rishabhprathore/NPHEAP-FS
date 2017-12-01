@@ -487,19 +487,16 @@ int nphfuse_unlink(const char *path)
 int nphfuse_rmdir(const char *path)
 {
     i_node *inode_data = NULL;
-
     inode_data = get_inode(path);
-    if (inode_data == NULL){
+    if (inode_data == NULL) {
+        log_msg("\nInside rmdir(). inode_data is NULL\n");
         return -ENOENT;
     }
-
-    if (CanUseInode(inode_data) != 1)
-    {
-        return -EACCES;
-    }
-
+    else if (CanUseInode(inode_data) != 1) {	log_msg("\nInside rmdir(). Access not allowed\n");    return -EACCES; }
+    else {
     memset(inode_data, 0, sizeof(i_node));
     return 0;
+    }
 }
 
 /** Create a symbolic link */
