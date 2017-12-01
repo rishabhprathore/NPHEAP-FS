@@ -918,7 +918,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
             write_offset += b_remaining;
             b_write += b_remaining;
             b_remaining = 0;
-            log_msg("\nwrite: data_block %s\n", data_block);
+            log_msg("\nwrite: data_block:%p data:%s\n", data_block, data_block);
             log_msg("\nwrite: path: %s b_write = %d, rel_offset = %d\n", path, b_write, rel_offset);
         }
 
