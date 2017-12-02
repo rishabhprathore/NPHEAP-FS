@@ -102,10 +102,10 @@ void path_name(char *fullpath)
     free(local_pathname);
 }
 
-/* Private Functions */
-int GetDirFileName(const char *path, char *dir, char *file)
+
+int resolve_path(const char *path, char *dir, char *file)
 {
-    log_msg("\nInside getdirfilename\n");
+    log_msg("\nInside resolve_path\n");
     char *string = NULL;
     char *ptr = NULL;
     char *prev = NULL;
@@ -187,7 +187,7 @@ static i_node *get_inode(const char *path)
         return get_root_inode();
     }
 
-    if (GetDirFileName(path, dir_name, file_name) != 0)
+    if (resolve_path(path, dir_name, file_name) != 0)
     {
         log_msg("\ndirfinename failed!!!\n");
         return NULL;
@@ -361,9 +361,9 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
             break;
     }
     log_msg("\nloop exit for mknod()\n");
-    if (GetDirFileName(path, dir_name, file_name) != 0)
+    if (resolve_path(path, dir_name, file_name) != 0)
     {
-        log_msg("\ngetdirfilename failed!\n");
+        log_msg("\nresolve_path failed!\n");
         return -EINVAL;
     }
     log_msg("\n dir_name = %s\n", dir_name);
@@ -452,9 +452,9 @@ int nphfuse_mkdir(const char *path, mode_t mode)
             break;
     }
     log_msg("\nloop exit\n");
-    if (GetDirFileName(path, dir_name, file_name) != 0)
+    if (resolve_path(path, dir_name, file_name) != 0)
     {
-        log_msg("\ngetdirfilename failed!\n");
+        log_msg("\nresolve_path failed!\n");
         return -EINVAL;
     }
     log_msg("\n dir_name = %s\n", dir_name);
@@ -509,7 +509,7 @@ int nphfuse_rmdir(const char *path)
     if (strcmp(path, "/") == 0)
         inode_data = get_root_inode();
 
-    if (GetDirFileName(path, dir_name, file_name) != 0)
+    if (resolve_path(path, dir_name, file_name) != 0)
     {
         inode_data = NULL;
     }
@@ -573,7 +573,7 @@ int nphfuse_rename(const char *path, const char *newpath)
         log_msg("\nInside rename(). Access not allowed\n");
         return -EACCES;
     }
-    else if (GetDirFileName(newpath, dir_name, file_name) != 0)
+    else if (resolve_path(newpath, dir_name, file_name) != 0)
     {
         log_msg("\nInside rename(). Unable to get directory name or file name");
         return -EINVAL;
@@ -612,7 +612,7 @@ int nphfuse_chmod(const char *path, mode_t mode)
     if (strcmp(path, "/") == 0)
         inode_data = get_root_inode();
 
-    if (GetDirFileName(path, dir_name, file_name) != 0)
+    if (resolve_path(path, dir_name, file_name) != 0)
     {
         inode_data = NULL;
     }
@@ -670,7 +670,7 @@ int nphfuse_chown(const char *path, uid_t uid, gid_t gid)
     if (strcmp(path, "/") == 0)
         inode_data = get_root_inode();
 
-    if (GetDirFileName(path, dir_name, file_name) != 0)
+    if (resolve_path(path, dir_name, file_name) != 0)
     {
         inode_data = NULL;
     }
@@ -734,7 +734,7 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
     if (strcmp(path, "/") == 0)
         inode_data = get_root_inode();
 
-    if (GetDirFileName(path, dir_name, file_name) != 0)
+    if (resolve_path(path, dir_name, file_name) != 0)
     {
         inode_data = NULL;
     }
@@ -1023,7 +1023,7 @@ int nphfuse_release(const char *path, struct fuse_file_info *fi)
     if (strcmp(path, "/") == 0)
         inode_data = get_root_inode();
 
-    if (GetDirFileName(path, dir_name, file_name) != 0)
+    if (resolve_path(path, dir_name, file_name) != 0)
     {
         inode_data = NULL;
     }
@@ -1180,17 +1180,17 @@ int nphfuse_fsyncdir(const char *path, int datasync, struct fuse_file_info *fi)
 
 int nphfuse_access(const char *path, int mask)
 {
-    i_node *inode_data = NULL;
-    i_node *t_inode_data = NULL;
     char dir_name[224];
     char file_name[128];
     __u64 offset = 0;
     int i = 0;
+    i_node *inode_data = NULL;
+    i_node *t_inode_data = NULL;
 
     if (strcmp(path, "/") == 0)
         inode_data = get_root_inode();
 
-    if (GetDirFileName(path, dir_name, file_name) != 0)
+    if (resolve_path(path, dir_name, file_name) != 0)
     {
         inode_data = NULL;
     }
@@ -1210,7 +1210,6 @@ int nphfuse_access(const char *path, int mask)
             if ((strcmp(t_inode_data[i].dir_name, dir_name) == 0) &&
                 (strcmp(t_inode_data[i].file_name, file_name) == 0))
             {
-                /* Entry found in inode block */
                 inode_data = &t_inode_data[i];
             }
         }
@@ -1244,7 +1243,9 @@ int nphfuse_access(const char *path, int mask)
  */
 int nphfuse_ftruncate(const char *path, off_t offset, struct fuse_file_info *fi)
 {
-    return -1;
+    return ret=-1;
+    log_msg("\nInside ftruncate\n");
+    return ret;
 }
 
 /**
@@ -1270,7 +1271,7 @@ int nphfuse_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_in
     if (strcmp(path, "/") == 0)
         inode_data = get_root_inode();
 
-    if (GetDirFileName(path, dir_name, file_name) != 0)
+    if (resolve_path(path, dir_name, file_name) != 0)
     {
         inode_data = NULL;
     }
