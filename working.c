@@ -727,10 +727,40 @@ int nphfuse_truncate(const char *path, off_t newsize)
 int nphfuse_utime(const char *path, struct utimbuf *ubuf)
 {
     i_node *inode_data = NULL;
+    i_node *t_inode_data = NULL;
+    char dir_name[224];
+    char file_name[128];
+    __u64 offset = 0;
+    int i = 0;
 
-    inode_data = get_inode(path);
+    if (strcmp(path, "/") == 0)
+        inode_data = get_root_inode();
 
-    if (CanUseInode(inode_data) != 1)
+    if (GetDirFileName(path, dir_name, file_name) != 0)
+    {
+        inode_data = NULL;
+    }
+
+    for (offset = 2; offset < 1000; offset++)
+    {
+        t_inode_data = (i_node *)data_array[offset];
+
+        if (t_inode_data == 0)
+            inode_data = NULL;
+
+        for (i = 0; i < 16; i++)
+        {
+            if ((strcmp(t_inode_data[i].dir_name, dir_name) == 0) &&
+                (strcmp(t_inode_data[i].file_name, file_name) == 0))
+            {
+                /* Entry found in inode block */
+                inode_data = &t_inode_data[i];
+            }
+        }
+    }
+
+    int my_flag = CanUseInode(inode_data);
+    if (my_flag != 1)
     {
         log_msg("\nInside utime(). Access not allowed\n");
         return -EACCES;
@@ -783,11 +813,6 @@ int nphfuse_open(const char *path, struct fuse_file_info *fi)
  *
  * Changed in version 2.2
  */
-// I don't fully understand the documentation above -- it doesn't
-// match the documentation for the read() system call which says it
-// can return with anything up to the amount of data requested. nor
-// with the fusexmp code which returns the amount of data also
-// returned by read.
 int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
     log_msg("\n read: path: %s size = %d, offset = %d\n", path, size, offset);
@@ -802,7 +827,7 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
     size_t b_remaining = size;
     size_t read_offset = offset;
     size_t rel_offset = 0;
-    size_t len =0;
+    size_t len = 0;
     int pos = 0;
     uint8_t *next_data = NULL;
     int cur_npheap_offset = 0;
@@ -842,23 +867,19 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
         if (data_size <= b_remaining + rel_offset)
         {
             len = data_size - rel_offset;
-            memcpy(buf + b_read, data_block + rel_offset,
-                                         len);
-            read_offset += (len);
-            b_read += (len);
             b_remaining -= (len);
         }
         else
         {
             len = b_remaining;
-            memcpy(buf + b_read, data_block + rel_offset,
-                   len);
-            read_offset += len;
-            b_read += len;
             b_remaining = 0;
             log_msg("\nread: data_block:%p data:%s\n", data_block, buf);
             log_msg("\nread: path: %s b_read = %d, rel_offset = %d\n", path, b_read, rel_offset);
         }
+        memcpy(buf + b_read, data_block + rel_offset,
+               len);
+        read_offset += (len);
+        b_read += (len);
     }
 
     gettimeofday(&day_tm, NULL);
