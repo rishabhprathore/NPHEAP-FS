@@ -1294,13 +1294,6 @@ void *nphfuse_init(struct fuse_conn_info *conn)
     return NPHFS_DATA;
 }
 
-/**
- * Clean up filesystem
- *
- * Called on filesystem exit.
- *
- * Introduced in version 2.3
- */
 void nphfuse_destroy(void *userdata)
 {
     if (npheap_fd)
