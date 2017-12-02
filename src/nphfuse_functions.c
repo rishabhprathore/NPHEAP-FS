@@ -768,7 +768,6 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
         b_read += copy_len;
         b_remaining = 0;
     }
-
     return b_read;
 }
 int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
