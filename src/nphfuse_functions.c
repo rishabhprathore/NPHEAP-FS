@@ -219,6 +219,7 @@ static void npheap_fs_init(void)
     uint8_t *block_data = NULL;
     i_node *inode_data = NULL;
     i_node *root_inode = NULL;
+    int flag =1;
     
 
     npheap_fd = open(nphfuse_data->device_name, O_RDWR);
@@ -268,13 +269,19 @@ static void npheap_fs_init(void)
 
     strcpy(root_inode->dir_name, "/");
     strcpy(root_inode->file_name, "/");
-    root_inode->fstat.st_ino = inode_num++;
-    root_inode->fstat.st_mode = S_IFDIR | 0755;
-    root_inode->fstat.st_nlink = 2;
-    root_inode->fstat.st_size = 8192;
-    root_inode->fstat.st_uid = getuid();
-    root_inode->fstat.st_gid = getgid();
-    return;
+    if(flag==1){
+        root_inode->fstat.st_ino = inode_num++;
+        root_inode->fstat.st_size = 8192;
+        root_inode->fstat.st_gid = getgid();
+    }
+    if (flag == 1)
+    {
+        root_inode->fstat.st_mode = S_IFDIR | 0755;
+        root_inode->fstat.st_nlink = 2;
+        root_inode->fstat.st_uid = getuid();
+    }    
+
+        return;
 }
 
 int nphfuse_getattr(const char *path, struct stat *stbuf)
@@ -321,7 +328,6 @@ void mknod_fstat_helper(i_node *temp_node, mode_t mode, dev_t dev)
         temp_node->fstat.st_ctime = day_tm.tv_sec;
         temp_node->fstat.st_mtime = day_tm.tv_sec;
     }    
-
         return;
 }
 
