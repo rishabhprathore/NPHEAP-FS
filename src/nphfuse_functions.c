@@ -701,21 +701,8 @@ int nphfuse_open(const char *path, struct fuse_file_info *fi)
 }
 
 /** Read data from an open file
- *
- * Read should return exactly the number of bytes requested except
- * on EOF or error, otherwise the rest of the data will be
- * substituted with zeroes.  An exception to this is when the
- * 'direct_io' mount option is specified, in which case the return
- * value of the read system call will reflect the return value of
- * this operation.
- *
- * Changed in version 2.2
  */
-// I don't fully understand the documentation above -- it doesn't
-// match the documentation for the read() system call which says it
-// can return with anything up to the amount of data requested. nor
-// with the fusexmp code which returns the amount of data also
-// returned by read.
+
 int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
     log_msg("\n read: path: %s size = %d, offset = %d\n", path, size, offset);
@@ -734,11 +721,14 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
     int pos = 0;
     uint8_t *next_data = NULL;
     int cur_npheap_offset = 0;
+    size_t copy_len =0;
 
     inode_data = get_inode(path);
     if (inode_data==NULL) return -ENOENT;
 
     if (CanUseInode(inode_data) != 1) return -EACCES;
+    gettimeofday(&day_tm, NULL);
+    inode_data->fstat.st_atime = day_tm.tv_sec;
 
     data_size = npheap_getsize(npheap_fd, inode_data->offset);
     //if (data_size == 0) return 0;
@@ -764,38 +754,23 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
         rel_offset = read_offset % 8192;
         if (data_size <= b_remaining + rel_offset)
         {
-            memcpy(buf + b_read, data_block + rel_offset,
-                   data_size - rel_offset);
-
-            read_offset += (data_size - rel_offset);
-            b_read += (data_size - rel_offset);
-            b_remaining -= (data_size - rel_offset);
+            copy_len = data_size - rel_offset;
         }
         else
         {
-            memcpy(buf + b_read, data_block + rel_offset,
-                   b_remaining);
-            read_offset += b_remaining;
-            b_read += b_remaining;
-            b_remaining = 0;
-            log_msg("\nread: data_block:%p data:%s\n", data_block, buf);
+            copy_len = b_remaining;            
             log_msg("\nread: path: %s b_read = %d, rel_offset = %d\n", path, b_read, rel_offset);
-            }
+        }
+        memcpy(buf + b_read, data_block + rel_offset,
+                copy_len);
+        read_offset += copy_len;
+        log_msg("\nread: data_block:%p data:%s\n", data_block, buf);
+        b_read += copy_len;
+        b_remaining = 0;
     }
-
-    gettimeofday(&day_tm, NULL);
-    inode_data->fstat.st_atime = day_tm.tv_sec;
 
     return b_read;
 }
-
-/** Write data to an open file
- *
- * Write should return exactly the number of bytes requested
- * except on error.  An exception to this is when the 'direct_io'
- * mount option is specified (see read operation).
- *
- */
 int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
 	     struct fuse_file_info *fi)
 {
