@@ -23,6 +23,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <sys/time.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <libgen.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 int npheap_fd = 0;
 uint64_t inode_num = 2;
@@ -42,10 +48,7 @@ uint64_t data_next[10000];
  * ignored.  The 'st_ino' field is ignored except if the 'use_ino'
  * mount option is given.
  */
-#include <libgen.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
+
 
 extern struct nphfuse_state *nphfuse_data;
 
@@ -216,6 +219,8 @@ static void npheap_fs_init(void)
     uint8_t *block_data = NULL;
     i_node *inode_data = NULL;
     i_node *root_inode = NULL;
+    uid_t u_id = getuid();
+    uid_t g_id = getgid();
 
     npheap_fd = open(nphfuse_data->device_name, O_RDWR);
     // allocate offset 0 in npheap for superblock
@@ -261,15 +266,15 @@ static void npheap_fs_init(void)
     root_inode = get_root_inode();
     
     log_msg("\nnphfuse_fs_init()  1\n");
+
     strcpy(root_inode->dir_name, "/");
-    log_msg("\nnphfuse_fs_init()  2\n");
     strcpy(root_inode->file_name, "/");
     root_inode->fstat.st_ino = inode_num++;
     root_inode->fstat.st_mode = S_IFDIR | 0755;
     root_inode->fstat.st_nlink = 2;
     root_inode->fstat.st_size = 8192;
-    root_inode->fstat.st_uid = getuid();
-    root_inode->fstat.st_gid = getgid();
+    root_inode->fstat.st_uid = u_id;
+    root_inode->fstat.st_gid = g_id;
     return;
 }
 
