@@ -742,7 +742,9 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
     char dir_name[224];
     char file_name[128];
     __u64 offset = 0;
+    int ret=0;
     int i = 0;
+    int flag =0;
 
     if (strcmp(path, "/") == 0)
         inode_data = get_root_inode();
@@ -776,10 +778,13 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
     }
     if (ubuf->actime)
         inode_data->fstat.st_atime = ubuf->actime;
-    if (ubuf->modtime)
-        inode_data->fstat.st_mtime = ubuf->modtime;
+    if(flag==0){
+        if (ubuf->modtime)
+            inode_data->fstat.st_mtime = ubuf->modtime;
+    }
+    
 
-    return 0;
+    return ret;
 }
 
 /** File open operation
@@ -824,6 +829,7 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
     int pos = 0;
     uint8_t *next_data = NULL;
     int cur_npheap_offset = 0;
+    gettimeofday(&day_tm, NULL);
 
     inode_data = get_inode(path);
     if (inode_data == NULL)
@@ -875,7 +881,7 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
         b_read += (len);
     }
 
-    gettimeofday(&day_tm, NULL);
+    
     inode_data->fstat.st_atime = day_tm.tv_sec;
     return b_read;
 }
