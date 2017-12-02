@@ -10,14 +10,11 @@
 #include <sys/stat.h>
 #include <stdint.h>
 
-#define FILE_MAX 128
-#define DIR_MAX 224
-
 typedef struct i_node{
   struct  stat fstat;
   uint64_t offset;
-  char 		 file_name[FILE_MAX];
-  char		 dir_name[DIR_MAX];
+  char 		 file_name[128];
+  char		 dir_name[224];
   long int		 pad;	
 } i_node;
 
