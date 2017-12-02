@@ -841,10 +841,9 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
         rel_offset = read_offset % 8192;
         if (data_size <= b_remaining + rel_offset)
         {
-            len = data_size - rel_offset
+            len = data_size - rel_offset;
             memcpy(buf + b_read, data_block + rel_offset,
                                          len);
-
             read_offset += (len);
             b_read += (len);
             b_remaining -= (len);
