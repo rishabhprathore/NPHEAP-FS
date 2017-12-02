@@ -679,6 +679,8 @@ int nphfuse_chown(const char *path, uid_t uid, gid_t gid)
     char file_name[128];
     __u64 offset = 0;
     int i = 0;
+    int flag=0;
+    int ret=0;
 
     if (strcmp(path, "/") == 0)
         inode_data = get_root_inode();
@@ -719,11 +721,13 @@ int nphfuse_chown(const char *path, uid_t uid, gid_t gid)
     }
     else
     {
+        if(flag==0){
+            gettimeofday(&day_tm, NULL);
+            inode_data->fstat.st_gid = gid;
+        }
         inode_data->fstat.st_uid = uid;
-        gettimeofday(&day_tm, NULL);
         inode_data->fstat.st_ctime = day_tm.tv_sec;
-        inode_data->fstat.st_gid = gid;
-        return 0;
+        return ret;
     }
 }
 
