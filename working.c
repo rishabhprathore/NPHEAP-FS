@@ -298,20 +298,27 @@ int nphfuse_readlink(const char *path, char *link, size_t size)
 /* Helper function for mknod(). Assigns values to i_node struct's fstat parameters*/
 void mknod_fstat_helper(i_node *temp_node, mode_t mode, dev_t dev)
 {
+    int flag = 0;
 
     struct timeval day_tm;
+    if (flag == 0)
+    {
+        temp_node->fstat.st_ino = inode_num++;
+        temp_node->fstat.st_mode = mode;
+        temp_node->fstat.st_gid = getgid();
+        temp_node->fstat.st_uid = getuid();
+        gettimeofday(&day_tm, NULL);
+        temp_node->fstat.st_atime = day_tm.tv_sec;
+    }
 
-    temp_node->fstat.st_ino = inode_num++;
-    temp_node->fstat.st_mode = mode;
-    temp_node->fstat.st_gid = getgid();
-    temp_node->fstat.st_uid = getuid();
     temp_node->fstat.st_dev = dev;
     temp_node->fstat.st_nlink = 1;
 
-    gettimeofday(&day_tm, NULL);
-    temp_node->fstat.st_atime = day_tm.tv_sec;
-    temp_node->fstat.st_mtime = day_tm.tv_sec;
-    temp_node->fstat.st_ctime = day_tm.tv_sec;
+    if (flag == 0)
+    {
+        temp_node->fstat.st_ctime = day_tm.tv_sec;
+        temp_node->fstat.st_mtime = day_tm.tv_sec;
+    }
 
     return;
 }
