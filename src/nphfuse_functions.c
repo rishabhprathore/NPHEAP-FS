@@ -343,18 +343,15 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
 
     for (offset = 2; offset < 1000; offset++)
     {
-        /*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
-                                                npheap_getsize(npheap_fd, offset));
-*/
         t_inode_data = (i_node *)data_array[offset];
         for (i = 0; i < 16; i++)
         {
-            if ((t_inode_data[i].dir_name[0] == '\0') &&
-                (t_inode_data[i].file_name[0] == '\0'))
-            {
-                inode_data = &t_inode_data[i];
-                check = 1;
-                break;
+            if (t_inode_data[i].dir_name[0] == '\0'){
+                if (t_inode_data[i].file_name[0] == '\0')){
+                        inode_data = &t_inode_data[i];
+                        check = 1;
+                        break;
+                }
             }
         }
         if (check == 1)
