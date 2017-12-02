@@ -195,7 +195,6 @@ static i_node *get_inode(const char *path)
 
     for (offset = 2; offset < 1000; offset++)
     {
-        // inode_data = (i_node *)npheap_alloc(npheap_fd, offset, 8192);
         inode_data = (i_node *)data_array[offset];
 
         if (inode_data == 0)
@@ -208,7 +207,6 @@ static i_node *get_inode(const char *path)
             if ((strcmp(inode_data[i].dir_name, dir_name) == 0) &&
                 (strcmp(inode_data[i].file_name, file_name) == 0))
             {
-                /* Entry found in inode block */
                 return &inode_data[i];
             }
         }
@@ -391,7 +389,7 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
         return -ENOMEM;
     }
 
-    memset(localDBlock, 0, BLOCK_CAPACITY);
+    memset(localDBlock, 0, 8192);
     data_array[data_offset] = localDBlock;
     inode_data->offset = data_offset++;
 
