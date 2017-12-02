@@ -347,7 +347,7 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
         for (i = 0; i < 16; i++)
         {
             if (t_inode_data[i].dir_name[0] == '\0'){
-                if (t_inode_data[i].file_name[0] == '\0')){
+                if (t_inode_data[i].file_name[0] == '\0'){
                         inode_data = &t_inode_data[i];
                         check = 1;
                         break;
