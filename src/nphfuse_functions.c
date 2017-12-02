@@ -448,15 +448,18 @@ int nphfuse_mkdir(const char *path, mode_t mode)
 
         for (i = 0; i < 16; i++)
         {
-            if ((t_inode_data[i].dir_name[0] == '\0') &&
-                (t_inode_data[i].file_name[0] == '\0'))
+            if (t_inode_data[i].dir_name[0] == '\0')
             {
-                log_msg("\nmkdir:: Free index:%d, offset:%d\n", i, offset);
-                inode_data = &t_inode_data[i];
-                log_msg("\nafter inode_data\n");
-                check = 1;
-                break;
+                if (t_inode_data[i].file_name[0] == '\0')
+                {
+                    log_msg("\nmkdir:: Free index:%d, offset:%d\n", i, offset);
+                    inode_data = &t_inode_data[i];
+                    log_msg("\nafter inode_data\n");
+                    check = 1;
+                    break;
+                }
             }
+            
         }
         if (check == 1)
             break;
