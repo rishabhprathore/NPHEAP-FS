@@ -961,24 +961,25 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
 
 void statfs_helper(i_node *t_inode_data, struct statvfs *statv)
 {
-
     uint8_t inuse_block_num = 0;
     uint8_t i = 0;
     __u64 offset = 0;
 
     for (offset = 2; offset < 1000; offset++)
     {
-
         t_inode_data = (i_node *)data_array[offset];
         for (i = 0; i < 16; i++)
-            if ((t_inode_data[i].dir_name[0] == '\0') &&
-                (t_inode_data[i].file_name[0] == '\0')) continue;
-        inuse_block_num++;
+            if (t_inode_data[i].dir_name[0] == '\0'){
+                if (t_inode_data[i].file_name[0] == '\0')) 
+                continue;
+            }
+        inuse_block_num = inuse_block_num+1;
     }
 
-    statv->f_bsize = 1024;
+    
     statv->f_frsize = 1024;
     statv->f_blocks = 7984;
+    statv->f_bsize = 1024;
     statv->f_bfree = statv->f_blocks - ((inuse_block_num - 1) / 2);
     statv->f_bavail = statv->f_bfree;
     statv->f_files = 15968;
@@ -1290,7 +1291,6 @@ int nphfuse_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_in
             if ((strcmp(t_inode_data[i].dir_name, dir_name) == 0) &&
                 (strcmp(t_inode_data[i].file_name, file_name) == 0))
             {
-                /* Entry found in inode block */
                 inode_data = &t_inode_data[i];
             }
         }
