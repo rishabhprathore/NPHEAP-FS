@@ -1243,7 +1243,7 @@ int nphfuse_access(const char *path, int mask)
  */
 int nphfuse_ftruncate(const char *path, off_t offset, struct fuse_file_info *fi)
 {
-    return ret=-1;
+    int  ret=-1;
     log_msg("\nInside ftruncate\n");
     return ret;
 }
