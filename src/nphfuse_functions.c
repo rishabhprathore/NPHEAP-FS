@@ -745,11 +745,7 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
     {
         t_inode_data = (i_node *)data_array[offset];
 
-        if (t_inode_data == 0)
-        {
-            log_msg("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
-            inode_data = NULL;
-        }
+        if (t_inode_data == 0) inode_data = NULL;
 
         for (i = 0; i < 16; i++)
         {
