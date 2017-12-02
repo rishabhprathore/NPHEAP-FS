@@ -121,16 +121,12 @@ int resolve_path(const char *path, char *dir, char *file)
     {
         strcpy(dir, "/");
         strcpy(file, "/");
-        printf("[%s]: dir:%s, file:%s\n", __func__, dir, file);
         return 0;
     }
 
     string = strdup(path);
     if (!string)
-    {
-        printf("failed to allocate memory to string\n");
         return 1;
-    }
 
     ptr = strtok(string, "/");
     if (!ptr)
@@ -152,8 +148,6 @@ int resolve_path(const char *path, char *dir, char *file)
         strcpy(dir, "/");
     }
     strncpy(file, prev, 128);
-
-    printf("[%s]: dir:%s, file:%s\n", __func__, dir, file);
     free(string);
     return 0;
 }
