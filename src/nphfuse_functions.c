@@ -155,6 +155,7 @@ int GetDirFileName(const char *path, char *dir, char *file)
 
     printf("[%s]: dir:%s, file:%s\n", __func__, dir, file);
     free(string);
+    log_msg("\nexit getdirfile\n");
     return 0;
 }
 
