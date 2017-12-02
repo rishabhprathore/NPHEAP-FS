@@ -252,8 +252,6 @@ static void npheap_fs_init(void)
 
     for (offset = 2; offset < 1000; offset++)
     {
-        //log_msg("\n before alloc offset: %d-> %d\n",
-        //        offset, npheap_getsize(npheap_fd, offset));
         if (npheap_getsize(npheap_fd, offset) == 0)
         {
             block_data = npheap_alloc(npheap_fd, offset, 8192);
@@ -270,6 +268,7 @@ static void npheap_fs_init(void)
     //get info of root directory inode
 
     root_inode = get_root_inode();
+
     log_msg("\nnphfuse_fs_init()  1\n");
     strcpy(root_inode->dir_name, "/");
     log_msg("\nnphfuse_fs_init()  2\n");
@@ -277,10 +276,9 @@ static void npheap_fs_init(void)
     root_inode->fstat.st_ino = inode_num++;
     root_inode->fstat.st_mode = S_IFDIR | 0755;
     root_inode->fstat.st_nlink = 2;
-    root_inode->fstat.st_size = npheap_getsize(npheap_fd, 1);
+    root_inode->fstat.st_size = 8192;
     root_inode->fstat.st_uid = getuid();
     root_inode->fstat.st_gid = getgid();
-    //root_inode = get_root_inode();
     return;
 }
 
@@ -294,24 +292,14 @@ int nphfuse_getattr(const char *path, struct stat *stbuf)
         log_msg("\ngetattr returning ENOENT\n");
         return -ENOENT;
     }
-    memcpy(stbuf, &inode_data->fstat, sizeof(struct stat));
+    memcpy(stbuf, &inode_data->fstat, 144);
     return 0;
 }
 
-/** Read the target of a symbolic link
- *
- * The buffer should be filled with a null terminated string.  The
- * buffer size argument includes the space for the terminating
- * null character.  If the linkname is too long to fit in the
- * buffer, it should be truncated.  The return value should be 0
- * for success.
- */
-// Note the system readlink() will truncate and lose the terminating
-// null.  So, the size passed to to the system readlink() must be one
-// less than the size passed to nphfuse_readlink()
-// nphfuse_readlink() code by Bernardo F Costa (thanks!)
+/** Read the target of a symbolic link */
 int nphfuse_readlink(const char *path, char *link, size_t size)
 {
+    log_msg("\nInside readlink\n");
     return -1;
 }
 
@@ -490,20 +478,17 @@ int nphfuse_mkdir(const char *path, mode_t mode)
 /** Remove a file */
 int nphfuse_unlink(const char *path)
 {
+    int ret = 0;
     i_node *inode_data = NULL;
     log_msg("\nunlink: %s \n", path);
     inode_data = get_inode(path);
     if (inode_data == NULL)
-    {
         return -ENOENT;
-    }
 
-    if (CanUseInode(inode_data) != 1)
-    {
+    else if (CanUseInode(inode_data) != 1)
         return -EACCES;
-    }
 
-    if (npheap_getsize(npheap_fd, inode_data->offset) != 0)
+    else if (npheap_getsize(npheap_fd, inode_data->offset) != 0)
     {
         log_msg("\nunlink: deleting offset %d \n", inode_data->offset);
         npheap_delete(npheap_fd, inode_data->offset);
@@ -511,7 +496,7 @@ int nphfuse_unlink(const char *path)
     log_msg("\nunlink before memset for path: %s\n", path);
     data_array[inode_data->offset] == NULL;
     memset(inode_data, 0, sizeof(inode_data));
-    return 0;
+    return ret;
 }
 
 /** Remove a directory */
@@ -955,7 +940,6 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
             memset(next_data_block, 0,
                    npheap_getsize(npheap_fd, data_next[cur_npheap_offset -
                                                        1000]));
-
             memcpy(data_block + rel_offset, buf + b_write,
                    data_size - rel_offset);
 
