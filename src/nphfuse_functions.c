@@ -567,7 +567,7 @@ int nphfuse_rename(const char *path, const char *newpath)
     gettimeofday(&day_tm, NULL);
     int ret =0;
     inode_data = get_inode(path);
-    if (inode_data == NULL)
+    if (inode_data == NULL){
         log_msg("\nInside rename(). inode_data is NULL\n");
         return -ENOENT;
     }
