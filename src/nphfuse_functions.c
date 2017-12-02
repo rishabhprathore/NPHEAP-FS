@@ -947,7 +947,6 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
             memset(next_data_block, 0,
                    npheap_getsize(npheap_fd, data_next[cur_npheap_offset -
                                                        1000]));
-
             memcpy(data_block + rel_offset, buf + b_write,
                    data_size - rel_offset);
 
