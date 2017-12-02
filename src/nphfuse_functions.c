@@ -399,10 +399,13 @@ void mkdir_fstat_helper(i_node *temp_node, mode_t mode)
 
     struct timeval day_tm;
 
+    uid_t u_id = getuid();
+    uid_t g_id = getgid();
+
     temp_node->fstat.st_ino = inode_num++;
     temp_node->fstat.st_mode = S_IFDIR | mode;
-    temp_node->fstat.st_gid = getgid();
-    temp_node->fstat.st_uid = getuid();
+    temp_node->fstat.st_gid = u_id;
+    temp_node->fstat.st_uid = g_id;
     temp_node->fstat.st_size = 4096;
     temp_node->fstat.st_nlink = 2;
 
