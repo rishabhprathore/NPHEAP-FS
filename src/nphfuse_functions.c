@@ -731,9 +731,6 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
     size_t read_offset = offset;
     size_t rel_offset = 0;
     
-
-    int ret = 0;
-
     uint8_t pos = 0;
     uint8_t *next_data = NULL;
     __u64 cur_npheap_offset = 0;
@@ -784,8 +781,6 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
             log_msg("\nread: data_block:%p data:%s\n", data_block, buf);
             log_msg("\nread: path: %s b_read = %d, rel_offset = %d\n", path, b_read, rel_offset);
             }
-
-        //ret = b_read;
     }
 
     gettimeofday(&day_tm, NULL);
