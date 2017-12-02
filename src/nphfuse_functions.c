@@ -397,8 +397,12 @@ void mkdir_fstat_helper(i_node *temp_node, mode_t mode)
 {
 
     struct timeval day_tm;
-
-
+    int flag =1;
+    if(flag==1){
+        gettimeofday(&day_tm, NULL);
+        temp_node->fstat.st_atime = day_tm.tv_sec;
+    }
+    
     temp_node->fstat.st_ino = inode_num++;
     temp_node->fstat.st_mode = S_IFDIR | mode;
     temp_node->fstat.st_gid = getgid();
@@ -408,9 +412,12 @@ void mkdir_fstat_helper(i_node *temp_node, mode_t mode)
 
     gettimeofday(&day_tm, NULL);
     temp_node->fstat.st_atime = day_tm.tv_sec;
-    temp_node->fstat.st_mtime = day_tm.tv_sec;
-    temp_node->fstat.st_ctime = day_tm.tv_sec;
 
+    if(flag==1){
+        temp_node->fstat.st_ctime = day_tm.tv_sec;
+        temp_node->fstat.st_mtime = day_tm.tv_sec;
+    }
+    
     return;
 }
 
@@ -427,9 +434,6 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     int check = 0;
     for (offset = 2; offset < 1000; offset++)
     {
-        /*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
-                                                npheap_getsize(npheap_fd, offset));
-*/
         t_inode_data = (i_node *)data_array[offset];
 
         for (i = 0; i < 16; i++)
