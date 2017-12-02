@@ -812,11 +812,6 @@ int nphfuse_open(const char *path, struct fuse_file_info *fi)
  *
  * Changed in version 2.2
  */
-// I don't fully understand the documentation above -- it doesn't
-// match the documentation for the read() system call which says it
-// can return with anything up to the amount of data requested. nor
-// with the fusexmp code which returns the amount of data also
-// returned by read.
 int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
     log_msg("\n read: path: %s size = %d, offset = %d\n", path, size, offset);
@@ -871,23 +866,19 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
         if (data_size <= b_remaining + rel_offset)
         {
             len = data_size - rel_offset;
-            memcpy(buf + b_read, data_block + rel_offset,
-                                         len);
-            read_offset += (len);
-            b_read += (len);
             b_remaining -= (len);
         }
         else
         {
             len = b_remaining;
-            memcpy(buf + b_read, data_block + rel_offset,
-                   len);
-            read_offset += len;
-            b_read += len;
             b_remaining = 0;
             log_msg("\nread: data_block:%p data:%s\n", data_block, buf);
             log_msg("\nread: path: %s b_read = %d, rel_offset = %d\n", path, b_read, rel_offset);
         }
+        memcpy(buf + b_read, data_block + rel_offset,
+               len);
+        read_offset += (len);
+        b_read += (len);
     }
 
     gettimeofday(&day_tm, NULL);
