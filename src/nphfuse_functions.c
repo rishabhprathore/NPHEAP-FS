@@ -51,46 +51,55 @@ extern struct nphfuse_state *nphfuse_data;
 
 int CanUseInode(i_node *inode_data)
 {
-    if (inode_data == NULL) return 0;
-    if ((getuid() == 0) || (getgid() == 0)) return 1;
-    if(inode_data->fstat.st_uid == getuid() ||
-             (inode_data->fstat.st_gid == getgid())) return 1;
+    if (inode_data == NULL)
+        return 0;
+    if ((getuid() == 0) || (getgid() == 0))
+        return 1;
+    if (inode_data->fstat.st_uid == getuid() ||
+        (inode_data->fstat.st_gid == getgid()))
+        return 1;
     return 0;
 }
 
-void split_func(char *local_pathname) {
+void split_func(char *local_pathname)
+{
 
-	char* ts1 = strdup(local_pathname);
-	char* ts2 = strdup(local_pathname);
-	char* dir = dirname(ts1);
-	char* filename = basename(ts2);
-//call your funtion here in the place of the three lines below
-	printf("\nDIRECTORY: %s", dir);
-	printf("\nFILENAME: %s", filename);
-	printf("\n-------------**-------------");
-	return;
+    char *ts1 = strdup(local_pathname);
+    char *ts2 = strdup(local_pathname);
+    char *dir = dirname(ts1);
+    char *filename = basename(ts2);
+    //call your funtion here in the place of the three lines below
+    printf("\nDIRECTORY: %s", dir);
+    printf("\nFILENAME: %s", filename);
+    printf("\n-------------**-------------");
+    return;
 }
 
-void path_name(char *fullpath) {
+void path_name(char *fullpath)
+{
 
-	char *pos = NULL;
-	char *temp = NULL;
-	char *local_pathname = NULL;
-	printf("\nfullpath passed as INPUT is: %s\n", fullpath);
-	for (temp = fullpath; temp <= fullpath + strlen(fullpath); temp++) {
-		if(*temp == '/') {
-			for (pos = temp+1 ;pos <= fullpath + strlen(fullpath); pos++) {
-				if (*pos == '/' || *pos == '\0') {
-					local_pathname = malloc(pos - fullpath + 1);
-					strncpy(local_pathname, fullpath, pos - fullpath);
-        			local_pathname[pos - fullpath] = '\0';
-        			split_func(local_pathname);
-        			break;
-				}		
-			}
-		}
-	}
-	free(local_pathname);
+    char *pos = NULL;
+    char *temp = NULL;
+    char *local_pathname = NULL;
+    printf("\nfullpath passed as INPUT is: %s\n", fullpath);
+    for (temp = fullpath; temp <= fullpath + strlen(fullpath); temp++)
+    {
+        if (*temp == '/')
+        {
+            for (pos = temp + 1; pos <= fullpath + strlen(fullpath); pos++)
+            {
+                if (*pos == '/' || *pos == '\0')
+                {
+                    local_pathname = malloc(pos - fullpath + 1);
+                    strncpy(local_pathname, fullpath, pos - fullpath);
+                    local_pathname[pos - fullpath] = '\0';
+                    split_func(local_pathname);
+                    break;
+                }
+            }
+        }
+    }
+    free(local_pathname);
 }
 
 /* Private Functions */
@@ -107,7 +116,7 @@ int GetDirFileName(const char *path, char *dir, char *file)
     }
     memset(dir, 0, 224);
     memset(file, 0, 128);
-    
+
     if (!strcmp(path, "/"))
     {
         strcpy(dir, "/");
@@ -149,7 +158,6 @@ int GetDirFileName(const char *path, char *dir, char *file)
     return 0;
 }
 
-
 static i_node *get_root_inode(void)
 {
     i_node *root_inode = NULL;
@@ -157,42 +165,49 @@ static i_node *get_root_inode(void)
     log_msg("\nget_root_inode()  called %d", npheap_getsize(npheap_fd, 2));
     //root_inode = (i_node *)npheap_alloc(npheap_fd, 2,npheap_getsize(npheap_fd, 2));
 
-    root_inode = (i_node *) data_array[2];    
-    test_inode= &root_inode[0];
+    root_inode = (i_node *)data_array[2];
+    test_inode = &root_inode[0];
     log_msg("\ncheck in test_inode\n");
     log_msg("\n test_inode links- %d, size - %d",
             test_inode->fstat.st_nlink, test_inode->fstat.st_size);
     return test_inode;
 }
 
-static i_node *get_inode(const char *path){
+static i_node *get_inode(const char *path)
+{
     i_node *inode_data = NULL;
     char dir_name[224];
     char file_name[128];
     __u64 offset = 0;
     int i = 0;
 
-    if (strcmp(path, "/")==0){
+    if (strcmp(path, "/") == 0)
+    {
         log_msg("\ncalling get_root_inode from get_inode()\n");
         return get_root_inode();
-}    
+    }
 
-    if (GetDirFileName(path, dir_name, file_name) != 0){
+    if (GetDirFileName(path, dir_name, file_name) != 0)
+    {
         log_msg("\ndirfinename failed!!!\n");
         return NULL;
     }
 
-    for (offset = 2; offset < 1000; offset++){
-       // inode_data = (i_node *)npheap_alloc(npheap_fd, offset, 8192);
-        inode_data = (i_node *) data_array[offset];
+    for (offset = 2; offset < 1000; offset++)
+    {
+        // inode_data = (i_node *)npheap_alloc(npheap_fd, offset, 8192);
+        inode_data = (i_node *)data_array[offset];
 
-        if (inode_data==0){
+        if (inode_data == 0)
+        {
             log_msg("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
-            return NULL;}
+            return NULL;
+        }
 
-        for (i = 0; i < 16; i++){
-            if ((strcmp(inode_data[i].dir_name, dir_name)==0) &&
-                (strcmp(inode_data[i].file_name, file_name)==0))
+        for (i = 0; i < 16; i++)
+        {
+            if ((strcmp(inode_data[i].dir_name, dir_name) == 0) &&
+                (strcmp(inode_data[i].file_name, file_name) == 0))
             {
                 /* Entry found in inode block */
                 return &inode_data[i];
@@ -204,7 +219,6 @@ static i_node *get_inode(const char *path){
     return NULL;
 }
 
-
 static void npheap_fs_init(void)
 {
     uint64_t offset = 0;
@@ -215,18 +229,21 @@ static void npheap_fs_init(void)
     npheap_fd = open(nphfuse_data->device_name, O_RDWR);
     // allocate offset 0 in npheap for superblock
     log_msg("\n npheap fd  %d\n", npheap_fd);
-    memset(data_array, 0, sizeof(uint8_t *) *10999);
+    memset(data_array, 0, sizeof(uint8_t *) * 10999);
     memset(&data_next, 0, sizeof(data_next));
-    if(npheap_getsize(npheap_fd, 1) == 0){
+    if (npheap_getsize(npheap_fd, 1) == 0)
+    {
         log_msg("\n inside superblock allocation\n");
         block_data = npheap_alloc(npheap_fd, 1, 8192);
-        if (block_data == NULL){
+        if (block_data == NULL)
+        {
             printf("Failed to allocate npheap memory to offset: 1");
             return;
-            }
-            memset(block_data, 0, npheap_getsize(npheap_fd, 1));
         }
-    else {
+        memset(block_data, 0, npheap_getsize(npheap_fd, 1));
+    }
+    else
+    {
         block_data = npheap_alloc(npheap_fd, offset,
                                   npheap_getsize(npheap_fd, offset));
     }
@@ -244,13 +261,14 @@ static void npheap_fs_init(void)
             log_msg("\n inode size for offset: %d-> %d\n",
                     offset, npheap_getsize(npheap_fd, offset));
         }
-        else block_data = npheap_alloc(npheap_fd, offset,
+        else
+            block_data = npheap_alloc(npheap_fd, offset,
                                       npheap_getsize(npheap_fd, offset));
 
         data_array[offset] = block_data;
     }
     //get info of root directory inode
-    
+
     root_inode = get_root_inode();
     log_msg("\nnphfuse_fs_init()  1\n");
     strcpy(root_inode->dir_name, "/");
@@ -266,16 +284,16 @@ static void npheap_fs_init(void)
     return;
 }
 
-
 int nphfuse_getattr(const char *path, struct stat *stbuf)
 {
-    i_node* inode_data = NULL;
+    i_node *inode_data = NULL;
     log_msg("\ninside get_attr for path %s\n", path);
     inode_data = get_inode(path);
-    if(inode_data==NULL){
+    if (inode_data == NULL)
+    {
         log_msg("\ngetattr returning ENOENT\n");
         return -ENOENT;
-    }    
+    }
     memcpy(stbuf, &inode_data->fstat, sizeof(struct stat));
     return 0;
 }
@@ -298,7 +316,8 @@ int nphfuse_readlink(const char *path, char *link, size_t size)
 }
 
 /* Helper function for mknod(). Assigns values to i_node struct's fstat parameters*/
-void mknod_fstat_helper(i_node *temp_node, mode_t mode, dev_t dev) {
+void mknod_fstat_helper(i_node *temp_node, mode_t mode, dev_t dev)
+{
 
     struct timeval day_tm;
 
@@ -323,7 +342,6 @@ void mknod_fstat_helper(i_node *temp_node, mode_t mode, dev_t dev) {
  * creation of all non-directory, non-symlink nodes.
  */
 
-
 int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
 {
 
@@ -334,48 +352,53 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
     uint8_t *localDBlock = NULL;
     i_node *inode_data = NULL;
     i_node *t_inode_data = NULL;
-    int offset =0;
-    int i=0;
+    int offset = 0;
+    int i = 0;
     int check = 0;
-    
-    for (offset = 2; offset < 1000; offset++) {
-/*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
+
+    for (offset = 2; offset < 1000; offset++)
+    {
+        /*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
                                                 npheap_getsize(npheap_fd, offset));
 */
-            t_inode_data = (i_node *) data_array[offset];
-            for (i = 0; i < 16; i++){
+        t_inode_data = (i_node *)data_array[offset];
+        for (i = 0; i < 16; i++)
+        {
             if ((t_inode_data[i].dir_name[0] == '\0') &&
-                (t_inode_data[i].file_name[0] == '\0')){
+                (t_inode_data[i].file_name[0] == '\0'))
+            {
                 inode_data = &t_inode_data[i];
                 check = 1;
                 break;
             }
         }
-        if(check==1) break;
+        if (check == 1)
+            break;
     }
     log_msg("\nloop exit for mknod()\n");
-    if (GetDirFileName(path, dir_name, file_name) != 0) {
-         log_msg("\ngetdirfilename failed!\n");
-         return -EINVAL;
+    if (GetDirFileName(path, dir_name, file_name) != 0)
+    {
+        log_msg("\ngetdirfilename failed!\n");
+        return -EINVAL;
     }
     log_msg("\n dir_name = %s\n", dir_name);
-
 
     memset(inode_data, 0, sizeof(i_node));
     strcpy(inode_data->dir_name, dir_name);
     strcpy(inode_data->file_name, file_name);
     mknod_fstat_helper(inode_data, mode, dev);
 
-
-    if (npheap_getsize(npheap_fd, data_offset) != 0) {
+    if (npheap_getsize(npheap_fd, data_offset) != 0)
+    {
         memset(inode_data, 0, sizeof(i_node));
         inode_num = inode_num - 1;
         return -ENOSPC;
     }
 
     localDBlock = npheap_alloc(npheap_fd, data_offset, 8192);
-    
-    if (localDBlock == NULL) {
+
+    if (localDBlock == NULL)
+    {
         memset(inode_data, 0, sizeof(i_node));
         inode_num = inode_num - 1;
         return -ENOMEM;
@@ -389,9 +412,9 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
     return 0;
 }
 
-
 /* Helper function for mkdir. Assigns values to i_node struct's fstat parameters*/
-void mkdir_fstat_helper(i_node *temp_node, mode_t mode) {
+void mkdir_fstat_helper(i_node *temp_node, mode_t mode)
+{
 
     struct timeval day_tm;
 
@@ -418,18 +441,21 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     i_node *t_inode_data = NULL;
     char dir_name[224];
     char file_name[128];
-    int offset =0;
-    int i=0;
+    int offset = 0;
+    int i = 0;
     int check = 0;
-    for (offset = 2; offset < 1000; offset++){
-/*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
+    for (offset = 2; offset < 1000; offset++)
+    {
+        /*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
                                                 npheap_getsize(npheap_fd, offset));
 */
-    	t_inode_data = (i_node *) data_array[offset];
+        t_inode_data = (i_node *)data_array[offset];
 
-	for (i = 0; i < 16; i++){
+        for (i = 0; i < 16; i++)
+        {
             if ((t_inode_data[i].dir_name[0] == '\0') &&
-                (t_inode_data[i].file_name[0] == '\0')){
+                (t_inode_data[i].file_name[0] == '\0'))
+            {
                 log_msg("\nmkdir:: Free index:%d, offset:%d\n", i, offset);
                 inode_data = &t_inode_data[i];
                 log_msg("\nafter inode_data\n");
@@ -437,10 +463,12 @@ int nphfuse_mkdir(const char *path, mode_t mode)
                 break;
             }
         }
-        if(check==1) break;
+        if (check == 1)
+            break;
     }
     log_msg("\nloop exit\n");
-    if (GetDirFileName(path, dir_name, file_name) != 0){
+    if (GetDirFileName(path, dir_name, file_name) != 0)
+    {
         log_msg("\ngetdirfilename failed!\n");
         return -EINVAL;
     }
@@ -453,7 +481,7 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     log_msg("\n before file_name copy!\n");
     strcpy(inode_data->file_name, file_name);
     log_msg("\n after file_name copy!\n");
-   
+
     mkdir_fstat_helper(inode_data, mode);
     log_msg("\nbefore return %d \n", inode_data->fstat.st_ino);
     return 0;
@@ -462,18 +490,21 @@ int nphfuse_mkdir(const char *path, mode_t mode)
 /** Remove a file */
 int nphfuse_unlink(const char *path)
 {
-    i_node* inode_data = NULL;
+    i_node *inode_data = NULL;
     log_msg("\nunlink: %s \n", path);
     inode_data = get_inode(path);
-    if (inode_data == NULL){
+    if (inode_data == NULL)
+    {
         return -ENOENT;
     }
 
-    if (CanUseInode(inode_data) != 1){
+    if (CanUseInode(inode_data) != 1)
+    {
         return -EACCES;
     }
 
-    if (npheap_getsize(npheap_fd, inode_data->offset) != 0){
+    if (npheap_getsize(npheap_fd, inode_data->offset) != 0)
+    {
         log_msg("\nunlink: deleting offset %d \n", inode_data->offset);
         npheap_delete(npheap_fd, inode_data->offset);
     }
@@ -488,14 +519,20 @@ int nphfuse_rmdir(const char *path)
 {
     i_node *inode_data = NULL;
     inode_data = get_inode(path);
-    if (inode_data == NULL) {
+    if (inode_data == NULL)
+    {
         log_msg("\nInside rmdir(). inode_data is NULL\n");
         return -ENOENT;
     }
-    else if (CanUseInode(inode_data) != 1) {	log_msg("\nInside rmdir(). Access not allowed\n");    return -EACCES; }
-    else {
-    memset(inode_data, 0, sizeof(i_node));
-    return 0;
+    else if (CanUseInode(inode_data) != 1)
+    {
+        log_msg("\nInside rmdir(). Access not allowed\n");
+        return -EACCES;
+    }
+    else
+    {
+        memset(inode_data, 0, sizeof(i_node));
+        return 0;
     }
 }
 
@@ -519,24 +556,34 @@ int nphfuse_rename(const char *path, const char *newpath)
     char file_name[128];
 
     inode_data = get_inode(path);
-    if (inode_data == NULL) {
-    	log_msg("\nInside rename(). inode_data is NULL\n");
+    if (inode_data == NULL)
+    {
+        log_msg("\nInside rename(). inode_data is NULL\n");
         return -ENOENT;
     }
-    else if (CanUseInode(inode_data) != 1) {	log_msg("\nInside rename(). Access not allowed\n");    return -EACCES; }
-    else if (GetDirFileName(newpath, dir_name, file_name) != 0) { log_msg("\nInside rename(). Unable to get directory name or file name");	return -EINVAL;	}
-    else {    
-    memset(inode_data->dir_name, 0, 224);
-    strcpy(inode_data->dir_name, dir_name);
+    else if (CanUseInode(inode_data) != 1)
+    {
+        log_msg("\nInside rename(). Access not allowed\n");
+        return -EACCES;
+    }
+    else if (GetDirFileName(newpath, dir_name, file_name) != 0)
+    {
+        log_msg("\nInside rename(). Unable to get directory name or file name");
+        return -EINVAL;
+    }
+    else
+    {
+        memset(inode_data->dir_name, 0, 224);
+        strcpy(inode_data->dir_name, dir_name);
 
-    memset(inode_data->file_name, 0, 128);
-    strcpy(inode_data->file_name, file_name);
+        memset(inode_data->file_name, 0, 128);
+        strcpy(inode_data->file_name, file_name);
 
-    gettimeofday(&day_tm, NULL);
-    inode_data->fstat.st_ctime = day_tm.tv_sec;
+        gettimeofday(&day_tm, NULL);
+        inode_data->fstat.st_ctime = day_tm.tv_sec;
 
-    return 0;
-	}
+        return 0;
+    }
 }
 
 /** Create a hard link to a file */
@@ -549,111 +596,6 @@ int nphfuse_link(const char *path, const char *newpath)
 int nphfuse_chmod(const char *path, mode_t mode)
 {
     struct timeval day_tm;
-	i_node *inode_data = NULL;
-	i_node *t_inode_data = NULL;
-    char dir_name[224];
-    char file_name[128];
-    __u64 offset = 0;
-    int i = 0;
-
-    if (strcmp(path, "/")==0)
-        inode_data = get_root_inode();
-
-    if (GetDirFileName(path, dir_name, file_name) != 0) {
-        inode_data = NULL;
-    }
-
-    for (offset = 2; offset < 1000; offset++)
-    {
-/*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
-                                                npheap_getsize(npheap_fd, offset));
-*/
-    	t_inode_data = (i_node *) data_array[offset];
-
-        if (t_inode_data==0){
-            log_msg("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
-            inode_data = NULL;
-        }
-
-        for (i = 0; i < 16; i++)	{
-            if ((strcmp(t_inode_data[i].dir_name, dir_name)==0) &&
-                (strcmp(t_inode_data[i].file_name, file_name)==0))
-            {
-                /* Entry found in inode block */
-                inode_data = &t_inode_data[i];
-            }
-        }
-    }
-
-    if (inode_data == NULL) {	log_msg("\nInside chmod(). inode_data is NULL."); 	return -ENOENT;	}
-	else if (CanUseInode(inode_data) != 1) {	log_msg("\nInside chmod(). Access not allowed\n");    return -EACCES; }
-    else {
-    	gettimeofday(&day_tm, NULL);
-	    inode_data->fstat.st_ctime = day_tm.tv_sec;
-	    inode_data->fstat.st_mode = mode;
-	    return 0;
-    }
-}
-
-/** Change the owner and group of a file */
-int nphfuse_chown(const char *path, uid_t uid, gid_t gid)
-{
-    struct timeval day_tm;
-	i_node *inode_data = NULL;
-	i_node *t_inode_data = NULL;
-    char dir_name[224];
-    char file_name[128];
-    __u64 offset = 0;
-    int i = 0;
-
-    if (strcmp(path, "/")==0)
-        inode_data = get_root_inode();
-
-    if (GetDirFileName(path, dir_name, file_name) != 0) {
-        inode_data = NULL;
-    }
-
-    for (offset = 2; offset < 1000; offset++)
-    {
-/*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
-                                                npheap_getsize(npheap_fd, offset));
-*/
-    	t_inode_data = (i_node *) data_array[offset];
-
-        if (t_inode_data==0){
-            log_msg("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
-            inode_data = NULL;
-        }
-
-        for (i = 0; i < 16; i++)	{
-            if ((strcmp(t_inode_data[i].dir_name, dir_name)==0) &&
-                (strcmp(t_inode_data[i].file_name, file_name)==0))
-            {
-                /* Entry found in inode block */
-                inode_data = &t_inode_data[i];
-            }
-        }
-    }
-
-    if (inode_data == NULL) {	log_msg("\nInside chown(). inode_data is NULL."); 	return -ENOENT;	}
-	else if (CanUseInode(inode_data) != 1) {	log_msg("\nInside chown(). Access not allowed\n");    return -EACCES; }
-    else {
-    	inode_data->fstat.st_uid = uid;
-    	gettimeofday(&day_tm, NULL);
-	    inode_data->fstat.st_ctime = day_tm.tv_sec;
-	    inode_data->fstat.st_gid = gid;
-	    return 0;
-    }  
-}
-
-/** Change the size of a file */
-int nphfuse_truncate(const char *path, off_t newsize)
-{
-        return -ENOENT;
-}
-
-int nphfuse_utime(const char *path, struct utimbuf *ubuf)
-{
     i_node *inode_data = NULL;
     i_node *t_inode_data = NULL;
     char dir_name[224];
@@ -661,37 +603,138 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
     __u64 offset = 0;
     int i = 0;
 
-    if (strcmp(path, "/")==0)
+    if (strcmp(path, "/") == 0)
         inode_data = get_root_inode();
 
-    if (GetDirFileName(path, dir_name, file_name) != 0) {
+    if (GetDirFileName(path, dir_name, file_name) != 0)
+    {
         inode_data = NULL;
     }
 
     for (offset = 2; offset < 1000; offset++)
     {
-/*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
+        /*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
                                                 npheap_getsize(npheap_fd, offset));
 */
-    	t_inode_data = (i_node *) data_array[offset];
+        t_inode_data = (i_node *)data_array[offset];
 
-        if (t_inode_data==0){
+        if (t_inode_data == 0)
+        {
             log_msg("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
             inode_data = NULL;
         }
 
-        for (i = 0; i < 16; i++)	{
-            if ((strcmp(t_inode_data[i].dir_name, dir_name)==0) &&
-                (strcmp(t_inode_data[i].file_name, file_name)==0))
+        for (i = 0; i < 16; i++)
+        {
+            if ((strcmp(t_inode_data[i].dir_name, dir_name) == 0) &&
+                (strcmp(t_inode_data[i].file_name, file_name) == 0))
             {
                 /* Entry found in inode block */
                 inode_data = &t_inode_data[i];
             }
         }
     }
-    
-    int my_flag = CanUseInode(inode_data);
-    if (my_flag != 1) {   log_msg("\nInside utime(). Access not allowed\n");    return -EACCES;     }
+
+    if (inode_data == NULL)
+    {
+        log_msg("\nInside chmod(). inode_data is NULL.");
+        return -ENOENT;
+    }
+    else if (CanUseInode(inode_data) != 1)
+    {
+        log_msg("\nInside chmod(). Access not allowed\n");
+        return -EACCES;
+    }
+    else
+    {
+        gettimeofday(&day_tm, NULL);
+        inode_data->fstat.st_ctime = day_tm.tv_sec;
+        inode_data->fstat.st_mode = mode;
+        return 0;
+    }
+}
+
+/** Change the owner and group of a file */
+int nphfuse_chown(const char *path, uid_t uid, gid_t gid)
+{
+    struct timeval day_tm;
+    i_node *inode_data = NULL;
+    i_node *t_inode_data = NULL;
+    char dir_name[224];
+    char file_name[128];
+    __u64 offset = 0;
+    int i = 0;
+
+    if (strcmp(path, "/") == 0)
+        inode_data = get_root_inode();
+
+    if (GetDirFileName(path, dir_name, file_name) != 0)
+    {
+        inode_data = NULL;
+    }
+
+    for (offset = 2; offset < 1000; offset++)
+    {
+        /*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
+                                                npheap_getsize(npheap_fd, offset));
+*/
+        t_inode_data = (i_node *)data_array[offset];
+
+        if (t_inode_data == 0)
+        {
+            log_msg("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
+            inode_data = NULL;
+        }
+
+        for (i = 0; i < 16; i++)
+        {
+            if ((strcmp(t_inode_data[i].dir_name, dir_name) == 0) &&
+                (strcmp(t_inode_data[i].file_name, file_name) == 0))
+            {
+                /* Entry found in inode block */
+                inode_data = &t_inode_data[i];
+            }
+        }
+    }
+
+    if (inode_data == NULL)
+    {
+        log_msg("\nInside chown(). inode_data is NULL.");
+        return -ENOENT;
+    }
+    else if (CanUseInode(inode_data) != 1)
+    {
+        log_msg("\nInside chown(). Access not allowed\n");
+        return -EACCES;
+    }
+    else
+    {
+        inode_data->fstat.st_uid = uid;
+        gettimeofday(&day_tm, NULL);
+        inode_data->fstat.st_ctime = day_tm.tv_sec;
+        inode_data->fstat.st_gid = gid;
+        return 0;
+    }
+}
+
+/** Change the size of a file */
+int nphfuse_truncate(const char *path, off_t newsize)
+{
+    return -ENOENT;
+}
+
+/** Change the access and/or modification times of a file */
+int nphfuse_utime(const char *path, struct utimbuf *ubuf)
+{
+    i_node *inode_data = NULL;
+
+    inode_data = get_inode(path);
+
+    if (CanUseInode(inode_data) != 1)
+    {
+        log_msg("\nInside utime(). Access not allowed\n");
+        return -EACCES;
+    }
     if (ubuf->actime)
         inode_data->fstat.st_atime = ubuf->actime;
     if (ubuf->modtime)
@@ -699,10 +742,6 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
 
     return 0;
 }
-
-
-
-
 
 /** File open operation
  *
@@ -716,37 +755,26 @@ int nphfuse_utime(const char *path, struct utimbuf *ubuf)
  */
 int nphfuse_open(const char *path, struct fuse_file_info *fi)
 {
-	struct timeval day_tm;
- 	i_node	*inode_data = get_inode(path);
+    struct timeval day_tm;
+    i_node *inode_data = get_inode(path);
 
- 	if (inode_data == NULL) return -ENOENT;
- 	
- 	int my_flag =  CanUseInode(inode_data);
+    if (inode_data == NULL)
+        return -ENOENT;
 
- 	if (my_flag != 1) return -EACCES;
+    int my_flag = CanUseInode(inode_data);
 
- 	fi->fh = inode_data->fstat.st_ino;
- 	gettimeofday(&day_tm, NULL);
- 	inode_data->fstat.st_atime = day_tm.tv_sec;
- 	return 0;
+    if (my_flag != 1)
+        return -EACCES;
+
+    fi->fh = inode_data->fstat.st_ino;
+    gettimeofday(&day_tm, NULL);
+    inode_data->fstat.st_atime = day_tm.tv_sec;
+    return 0;
 }
 
 /** Read data from an open file
- *
- * Read should return exactly the number of bytes requested except
- * on EOF or error, otherwise the rest of the data will be
- * substituted with zeroes.  An exception to this is when the
- * 'direct_io' mount option is specified, in which case the return
- * value of the read system call will reflect the return value of
- * this operation.
- *
- * Changed in version 2.2
  */
-// I don't fully understand the documentation above -- it doesn't
-// match the documentation for the read() system call which says it
-// can return with anything up to the amount of data requested. nor
-// with the fusexmp code which returns the amount of data also
-// returned by read.
+
 int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct fuse_file_info *fi)
 {
     log_msg("\n read: path: %s size = %d, offset = %d\n", path, size, offset);
@@ -756,37 +784,46 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
     uint8_t *data_block = NULL;
     size_t data_size = 0;
     struct timeval day_tm;
-    
+
     size_t b_read = 0;
     size_t b_remaining = size;
     size_t read_offset = offset;
     size_t rel_offset = 0;
-    
+
     int pos = 0;
     uint8_t *next_data = NULL;
     int cur_npheap_offset = 0;
+    size_t copy_len = 0;
 
     inode_data = get_inode(path);
-    if (inode_data==NULL) return -ENOENT;
+    if (inode_data == NULL)
+        return -ENOENT;
 
-    if (CanUseInode(inode_data) != 1) return -EACCES;
+    if (CanUseInode(inode_data) != 1)
+        return -EACCES;
+    gettimeofday(&day_tm, NULL);
+    inode_data->fstat.st_atime = day_tm.tv_sec;
 
     data_size = npheap_getsize(npheap_fd, inode_data->offset);
     //if (data_size == 0) return 0;
 
     data_block = data_array[inode_data->offset];
-    if (data_block==NULL) return -ENOENT;
+    if (data_block == NULL)
+        return -ENOENT;
 
     log_msg("\n read: path: %s inode->filename: %s inode->offset: %d \n", path, inode_data->file_name, inode_data->offset);
-    while(b_remaining!=0){
+    while (b_remaining != 0)
+    {
         pos = read_offset / 8192;
         cur_npheap_offset = inode_data->offset;
-        while(pos!=0){
+        while (pos != 0)
+        {
             pos = pos - 1;
             cur_npheap_offset = data_next[cur_npheap_offset - 1000];
         }
         data_block = data_array[cur_npheap_offset];
-        if (data_block==NULL) return -ENOENT;
+        if (data_block == NULL)
+            return -ENOENT;
 
         data_size = npheap_getsize(npheap_fd, cur_npheap_offset);
         if (data_size == 0)
@@ -795,42 +832,27 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
         rel_offset = read_offset % 8192;
         if (data_size <= b_remaining + rel_offset)
         {
-            memcpy(buf + b_read, data_block + rel_offset,
-                   data_size - rel_offset);
-
-            read_offset += (data_size - rel_offset);
-            b_read += (data_size - rel_offset);
-            b_remaining -= (data_size - rel_offset);
+            copy_len = data_size - rel_offset;
         }
         else
         {
-            memcpy(buf + b_read, data_block + rel_offset,
-                   b_remaining);
-            read_offset += b_remaining;
-            b_read += b_remaining;
-            b_remaining = 0;
-            log_msg("\nread: data_block:%p data:%s\n", data_block, buf);
+            copy_len = b_remaining;
             log_msg("\nread: path: %s b_read = %d, rel_offset = %d\n", path, b_read, rel_offset);
-            }
+        }
+        memcpy(buf + b_read, data_block + rel_offset,
+               copy_len);
+        read_offset += copy_len;
+        log_msg("\nread: data_block:%p data:%s\n", data_block, buf);
+        b_read += copy_len;
+        b_remaining = 0;
     }
-
-    gettimeofday(&day_tm, NULL);
-    inode_data->fstat.st_atime = day_tm.tv_sec;
 
     return b_read;
 }
-
-/** Write data to an open file
- *
- * Write should return exactly the number of bytes requested
- * except on error.  An exception to this is when the 'direct_io'
- * mount option is specified (see read operation).
- *
- */
 int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
-	     struct fuse_file_info *fi)
+                  struct fuse_file_info *fi)
 {
-    log_msg("\nwrite: path: %s size = %d, offset = %d\n",path, size, offset);
+    log_msg("\nwrite: path: %s size = %d, offset = %d\n", path, size, offset);
     log_msg("\nwrite: buf: %s \n", buf);
     i_node *inode_data = NULL;
     uint8_t *data_block = NULL;
@@ -852,7 +874,8 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
     }
 
     npHeapSize = npheap_getsize(npheap_fd, inode_data->offset);
-    if (npHeapSize == 0){
+    if (npHeapSize == 0)
+    {
         return 0;
     }
 
@@ -860,9 +883,10 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
     pDataBlock = npheap_alloc (npHeapFd, pInodeInfo->offset, npHeapSize);
 #endif
     data_block = data_array[inode_data->offset];
-    if (data_block==NULL){
+    if (data_block == NULL)
+    {
         log_msg("Failed to fetch allocated block for offset:%lu\n",
-               inode_data->offset);
+                inode_data->offset);
         return -ENOENT;
     }
 
@@ -876,13 +900,15 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
 
     b_remaining = size;
     write_offset = offset;
-    while (b_remaining){
+    while (b_remaining)
+    {
         /* Get data block according to offset */
         pos = write_offset / 8192;
         cur_npheap_offset = inode_data->offset;
-        while (pos){
+        while (pos)
+        {
             cur_npheap_offset = data_next[cur_npheap_offset - 1000];
-            pos = pos-1;
+            pos = pos - 1;
         }
 
         /* NP Heap offset retrieved where data is to be written */
@@ -890,7 +916,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
         if (data_block == NULL)
         {
             log_msg("Failed to fetch allocated block for offset:%llu\n",
-                   data_next[cur_npheap_offset]);
+                    data_next[cur_npheap_offset]);
             return -ENOENT;
         }
 
@@ -906,7 +932,8 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
         {
             /* Allocate new NP Heap offset for data */
             next_data_block = npheap_alloc(npheap_fd, data_offset, 8192);
-            if (next_data_block == NULL){
+            if (next_data_block == NULL)
+            {
                 log_msg("Failed to allocate block for offset:%llu\n", data_offset);
                 return -ENOMEM;
             }
@@ -915,7 +942,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
             data_next[cur_npheap_offset - 1000] = data_offset++;
             memset(next_data_block, 0,
                    npheap_getsize(npheap_fd, data_next[cur_npheap_offset -
-                                                        1000]));
+                                                       1000]));
 
             memcpy(data_block + rel_offset, buf + b_write,
                    npHeapSize - rel_offset);
@@ -948,17 +975,18 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
     return retVal;
 }
 
+void statfs_helper(i_node *t_inode_data, struct statvfs *statv)
+{
 
-void statfs_helper(i_node *t_inode_data, struct statvfs *statv) {
+    uint8_t inuse_block_num = 0;
+    uint8_t i = 0;
+    __u64 offset = 0;
 
-	uint8_t     inuse_block_num = 0;
-	uint8_t     i = 0;
-	__u64       offset = 0;
+    for (offset = 2; offset < 1000; offset++)
+    {
 
-	for (offset = 2; offset < 1000; offset++) {
-
-		t_inode_data = (i_node *) data_array[offset];
-		for (i = 0; i < 16; i++)
+        t_inode_data = (i_node *)data_array[offset];
+        for (i = 0; i < 16; i++)
         {
             if ((t_inode_data[i].dir_name[0] == '\0') &&
                 (t_inode_data[i].file_name[0] == '\0'))
@@ -967,12 +995,12 @@ void statfs_helper(i_node *t_inode_data, struct statvfs *statv) {
             }
         }
         inuse_block_num++;
-	}
+    }
 
-	statv->f_bsize = 1024;
+    statv->f_bsize = 1024;
     statv->f_frsize = 1024;
     statv->f_blocks = 7984;
-    statv->f_bfree = statv->f_blocks - ((inuse_block_num - 1)/2);
+    statv->f_bfree = statv->f_blocks - ((inuse_block_num - 1) / 2);
     statv->f_bavail = statv->f_bfree;
     statv->f_files = 15968;
     statv->f_ffree = statv->f_files - inuse_block_num;
@@ -991,7 +1019,7 @@ void statfs_helper(i_node *t_inode_data, struct statvfs *statv) {
 int nphfuse_statfs(const char *path, struct statvfs *statv)
 {
     i_node *inode_data = NULL;
-    memset (statv, 0, sizeof(struct statvfs));
+    memset(statv, 0, sizeof(struct statvfs));
     statfs_helper(inode_data, statv);
     return 0;
 }
@@ -1026,7 +1054,7 @@ int nphfuse_flush(const char *path, struct fuse_file_info *fi)
     log_msg("\nnphfuse_flush(path=\"%s\", fi=0x%08x)\n", path, fi);
     // no need to get fpath on this one, since I work from fi->fh not the path
     log_fi(fi);
-	
+
     return 0;
 }
 
@@ -1047,35 +1075,38 @@ int nphfuse_flush(const char *path, struct fuse_file_info *fi)
 int nphfuse_release(const char *path, struct fuse_file_info *fi)
 {
     log_msg("\nInside release() for path: %s\n", path);
-    i_node	*inode_data = NULL;
+    i_node *inode_data = NULL;
     i_node *t_inode_data = NULL;
     char dir_name[224];
     char file_name[128];
     __u64 offset = 0;
     int i = 0;
 
-    if (strcmp(path, "/")==0)
+    if (strcmp(path, "/") == 0)
         inode_data = get_root_inode();
 
-    if (GetDirFileName(path, dir_name, file_name) != 0) {
+    if (GetDirFileName(path, dir_name, file_name) != 0)
+    {
         inode_data = NULL;
     }
 
     for (offset = 2; offset < 1000; offset++)
     {
-/*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
+        /*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
                                                 npheap_getsize(npheap_fd, offset));
 */
-        t_inode_data = (i_node *) data_array[offset];
+        t_inode_data = (i_node *)data_array[offset];
 
-        if (t_inode_data==0){
+        if (t_inode_data == 0)
+        {
             printf("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
             inode_data = NULL;
         }
 
-        for (i = 0; i < 16; i++){
-            if ((strcmp(t_inode_data[i].dir_name, dir_name)==0) &&
-                (strcmp(t_inode_data[i].file_name, file_name)==0))
+        for (i = 0; i < 16; i++)
+        {
+            if ((strcmp(t_inode_data[i].dir_name, dir_name) == 0) &&
+                (strcmp(t_inode_data[i].file_name, file_name) == 0))
             {
                 /* Entry found in inode block */
                 inode_data = &t_inode_data[i];
@@ -1083,9 +1114,18 @@ int nphfuse_release(const char *path, struct fuse_file_info *fi)
         }
     }
 
-    if (inode_data == NULL)		{  log_msg("\nInside release(). inode_data is NULL\n");     return -ENOENT;    }
-    else if (CanUseInode (inode_data) != 1)     {   log_msg("\nInside release(). Access not allowed\n");    return -EACCES;     }
-    else	return 0;
+    if (inode_data == NULL)
+    {
+        log_msg("\nInside release(). inode_data is NULL\n");
+        return -ENOENT;
+    }
+    else if (CanUseInode(inode_data) != 1)
+    {
+        log_msg("\nInside release(). Access not allowed\n");
+        return -EACCES;
+    }
+    else
+        return 0;
 }
 
 /** Synchronize file contents
@@ -1137,35 +1177,43 @@ int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
 {
     log_msg("\ninside opendir for path: %s\n", path);
     i_node *inode_data = NULL;
-    
+
     inode_data = get_inode(path);
     log_msg("\ninside opendir for inode filename:  %s\n", inode_data->file_name);
-    if (inode_data == NULL) {return -ENOENT;}
+    if (inode_data == NULL)
+    {
+        return -ENOENT;
+    }
 
-    if (CanUseInode(inode_data) != 1) {return -EACCES;}
+    if (CanUseInode(inode_data) != 1)
+    {
+        return -EACCES;
+    }
 
     return 0;
 }
 
-
 int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset,
-	       struct fuse_file_info *fi)
+                    struct fuse_file_info *fi)
 {
     struct dirent de;
     i_node *inode_data = NULL;
     log_msg("\nreaddir for path: %s\n", path);
-    for (int offset = 2; offset < 1000; offset++) {
+    for (int offset = 2; offset < 1000; offset++)
+    {
         //inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
         //                                        npheap_getsize(npheap_fd, offset));
-        inode_data = (i_node *) data_array[offset];
+        inode_data = (i_node *)data_array[offset];
 
         //log_msg("\nreaddir before %d %d\n", block_entries, sizeof(i_node));
         //inode_data = (i_node *) data_array[offset];
         //log_msg("\nreaddir after access : %p\n", path);
-        for (int i = 0; i < 16; i++){
+        for (int i = 0; i < 16; i++)
+        {
             if ((!strcmp(inode_data[i].dir_name, path)) &&
-                (strcmp(inode_data[i].file_name, "/"))){
-                //log_msg("\nreaddir before memset filename:%s\n", 
+                (strcmp(inode_data[i].file_name, "/")))
+            {
+                //log_msg("\nreaddir before memset filename:%s\n",
                 //inode_data[i].file_name);
                 log_msg("\nreaddir found : %s\n", inode_data[i].file_name);
                 memset(&de, 0, sizeof(de));
@@ -1194,7 +1242,7 @@ int nphfuse_releasedir(const char *path, struct fuse_file_info *fi)
  * Introduced in version 2.3
  */
 // when exactly is this called?  when a user calls fsync and it
-// happens to be a directory? ??? 
+// happens to be a directory? ???
 int nphfuse_fsyncdir(const char *path, int datasync, struct fuse_file_info *fi)
 {
     return 0;
@@ -1209,28 +1257,31 @@ int nphfuse_access(const char *path, int mask)
     __u64 offset = 0;
     int i = 0;
 
-    if (strcmp(path, "/")==0)
+    if (strcmp(path, "/") == 0)
         inode_data = get_root_inode();
 
-    if (GetDirFileName(path, dir_name, file_name) != 0) {
+    if (GetDirFileName(path, dir_name, file_name) != 0)
+    {
         inode_data = NULL;
     }
 
     for (offset = 2; offset < 1000; offset++)
     {
-/*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
+        /*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
                                                 npheap_getsize(npheap_fd, offset));
 */
-        t_inode_data = (i_node *) data_array[offset];
+        t_inode_data = (i_node *)data_array[offset];
 
-        if (t_inode_data==0){
+        if (t_inode_data == 0)
+        {
             printf("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
             inode_data = NULL;
         }
 
-        for (i = 0; i < 16; i++){
-            if ((strcmp(t_inode_data[i].dir_name, dir_name)==0) &&
-                (strcmp(t_inode_data[i].file_name, file_name)==0))
+        for (i = 0; i < 16; i++)
+        {
+            if ((strcmp(t_inode_data[i].dir_name, dir_name) == 0) &&
+                (strcmp(t_inode_data[i].file_name, file_name) == 0))
             {
                 /* Entry found in inode block */
                 inode_data = &t_inode_data[i];
@@ -1238,9 +1289,18 @@ int nphfuse_access(const char *path, int mask)
         }
     }
 
-    if (inode_data == NULL) {return -ENOENT;}
-    else if (CanUseInode (inode_data) != 1) {return -EACCES;}
-    else {return 0;}
+    if (inode_data == NULL)
+    {
+        return -ENOENT;
+    }
+    else if (CanUseInode(inode_data) != 1)
+    {
+        return -EACCES;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 /**
@@ -1258,7 +1318,6 @@ int nphfuse_access(const char *path, int mask)
 int nphfuse_ftruncate(const char *path, off_t offset, struct fuse_file_info *fi)
 {
     return -1;
-
 }
 
 /**
@@ -1281,28 +1340,31 @@ int nphfuse_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_in
     __u64 offset = 0;
     int i = 0;
 
-    if (strcmp(path, "/")==0)
+    if (strcmp(path, "/") == 0)
         inode_data = get_root_inode();
 
-    if (GetDirFileName(path, dir_name, file_name) != 0) {
+    if (GetDirFileName(path, dir_name, file_name) != 0)
+    {
         inode_data = NULL;
     }
 
     for (offset = 2; offset < 1000; offset++)
     {
-/*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
+        /*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
                                                 npheap_getsize(npheap_fd, offset));
 */
-    	t_inode_data = (i_node *) data_array[offset];
+        t_inode_data = (i_node *)data_array[offset];
 
-        if (t_inode_data==0){
+        if (t_inode_data == 0)
+        {
             log_msg("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
             inode_data = NULL;
         }
 
-        for (i = 0; i < 16; i++){
-            if ((strcmp(t_inode_data[i].dir_name, dir_name)==0) &&
-                (strcmp(t_inode_data[i].file_name, file_name)==0))
+        for (i = 0; i < 16; i++)
+        {
+            if ((strcmp(t_inode_data[i].dir_name, dir_name) == 0) &&
+                (strcmp(t_inode_data[i].file_name, file_name) == 0))
             {
                 /* Entry found in inode block */
                 inode_data = &t_inode_data[i];
@@ -1310,8 +1372,11 @@ int nphfuse_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_in
         }
     }
 
-    if (inode_data == NULL) { return -ENOENT; }
-    memcpy (statbuf, &inode_data->fstat, sizeof(struct stat));
+    if (inode_data == NULL)
+    {
+        return -ENOENT;
+    }
+    memcpy(statbuf, &inode_data->fstat, sizeof(struct stat));
     return 0;
 }
 
@@ -1324,12 +1389,17 @@ void *nphfuse_init(struct fuse_conn_info *conn)
     return NPHFS_DATA;
 }
 
+/**
+ * Clean up filesystem
+ *
+ * Called on filesystem exit.
+ *
+ * Introduced in version 2.3
+ */
 void nphfuse_destroy(void *userdata)
 {
     if (npheap_fd)
-        close (npheap_fd);
+        close(npheap_fd);
 
     log_msg("\nnphfuse_destroy(userdata=0x%08x)\n", userdata);
 }
-
-
