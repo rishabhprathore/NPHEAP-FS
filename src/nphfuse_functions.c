@@ -219,8 +219,7 @@ static void npheap_fs_init(void)
     uint8_t *block_data = NULL;
     i_node *inode_data = NULL;
     i_node *root_inode = NULL;
-    uid_t u_id = getuid();
-    uid_t g_id = getgid();
+    
 
     npheap_fd = open(nphfuse_data->device_name, O_RDWR);
     // allocate offset 0 in npheap for superblock
@@ -273,8 +272,8 @@ static void npheap_fs_init(void)
     root_inode->fstat.st_mode = S_IFDIR | 0755;
     root_inode->fstat.st_nlink = 2;
     root_inode->fstat.st_size = 8192;
-    root_inode->fstat.st_uid = u_id;
-    root_inode->fstat.st_gid = g_id;
+    root_inode->fstat.st_uid = getuid();
+    root_inode->fstat.st_gid = getgid();
     return;
 }
 
@@ -399,13 +398,11 @@ void mkdir_fstat_helper(i_node *temp_node, mode_t mode)
 
     struct timeval day_tm;
 
-    uid_t u_id = getuid();
-    uid_t g_id = getgid();
 
     temp_node->fstat.st_ino = inode_num++;
     temp_node->fstat.st_mode = S_IFDIR | mode;
-    temp_node->fstat.st_gid = u_id;
-    temp_node->fstat.st_uid = g_id;
+    temp_node->fstat.st_gid = getgid();
+    temp_node->fstat.st_uid = getuid();
     temp_node->fstat.st_size = 4096;
     temp_node->fstat.st_nlink = 2;
 
