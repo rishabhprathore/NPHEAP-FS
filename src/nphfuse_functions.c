@@ -883,7 +883,6 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
 
     gettimeofday(&day_tm, NULL);
     inode_data->fstat.st_atime = day_tm.tv_sec;
-
     return b_read;
 }
 
