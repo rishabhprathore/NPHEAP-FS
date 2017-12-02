@@ -802,7 +802,7 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
     size_t b_remaining = size;
     size_t read_offset = offset;
     size_t rel_offset = 0;
-
+    size_t len =0;
     int pos = 0;
     uint8_t *next_data = NULL;
     int cur_npheap_offset = 0;
@@ -815,7 +815,6 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
         return -EACCES;
 
     data_size = npheap_getsize(npheap_fd, inode_data->offset);
-    //if (data_size == 0) return 0;
 
     data_block = data_array[inode_data->offset];
     if (data_block == NULL)
@@ -842,19 +841,20 @@ int nphfuse_read(const char *path, char *buf, size_t size, off_t offset, struct 
         rel_offset = read_offset % 8192;
         if (data_size <= b_remaining + rel_offset)
         {
+            len = data_size - rel_offset;
             memcpy(buf + b_read, data_block + rel_offset,
-                   data_size - rel_offset);
-
-            read_offset += (data_size - rel_offset);
-            b_read += (data_size - rel_offset);
-            b_remaining -= (data_size - rel_offset);
+                                         len);
+            read_offset += (len);
+            b_read += (len);
+            b_remaining -= (len);
         }
         else
         {
+            len = b_remaining;
             memcpy(buf + b_read, data_block + rel_offset,
-                   b_remaining);
-            read_offset += b_remaining;
-            b_read += b_remaining;
+                   len);
+            read_offset += len;
+            b_read += len;
             b_remaining = 0;
             log_msg("\nread: data_block:%p data:%s\n", data_block, buf);
             log_msg("\nread: path: %s b_read = %d, rel_offset = %d\n", path, b_read, rel_offset);
