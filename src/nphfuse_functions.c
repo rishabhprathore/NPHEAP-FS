@@ -913,6 +913,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
     uint8_t pos = 0;
     uint8_t *next_data_block = NULL;
     __u64 cur_npheap_offset = 0;
+    int flag =0;
 
     while (b_remaining!=0){
         pos = write_offset / 8192;
@@ -962,13 +963,15 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
 
         ret = b_write;
     }
-
-    gettimeofday(&day_tm, NULL);
+    if(flag==0){
+        gettimeofday(&day_tm, NULL);
+        inode_data->fstat.st_mtime = day_tm.tv_sec;
+        inode_data->fstat.st_size += ret;
+    }
+    
     inode_data->fstat.st_atime = day_tm.tv_sec;
-    inode_data->fstat.st_mtime = day_tm.tv_sec;
     inode_data->fstat.st_ctime = day_tm.tv_sec;
-    inode_data->fstat.st_size += ret;
-
+    
     return ret;
 }
 
