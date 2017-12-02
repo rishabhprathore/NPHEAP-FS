@@ -217,6 +217,7 @@ static void npheap_fs_init(void)
     uint8_t *block_data = NULL;
     i_node *inode_data = NULL;
     i_node *root_inode = NULL;
+    int flag = 1;
 
     npheap_fd = open(nphfuse_data->device_name, O_RDWR);
     // allocate offset 0 in npheap for superblock
@@ -265,12 +266,19 @@ static void npheap_fs_init(void)
 
     strcpy(root_inode->dir_name, "/");
     strcpy(root_inode->file_name, "/");
-    root_inode->fstat.st_ino = inode_num++;
-    root_inode->fstat.st_mode = S_IFDIR | 0755;
-    root_inode->fstat.st_nlink = 2;
-    root_inode->fstat.st_size = 8192;
-    root_inode->fstat.st_uid = getuid();
-    root_inode->fstat.st_gid = getgid();
+    if (flag == 1)
+    {
+        root_inode->fstat.st_ino = inode_num++;
+        root_inode->fstat.st_size = 8192;
+        root_inode->fstat.st_gid = getgid();
+    }
+    if (flag == 1)
+    {
+        root_inode->fstat.st_mode = S_IFDIR | 0755;
+        root_inode->fstat.st_nlink = 2;
+        root_inode->fstat.st_uid = getuid();
+    }
+
     return;
 }
 
@@ -303,23 +311,20 @@ void mknod_fstat_helper(i_node *temp_node, mode_t mode, dev_t dev)
     struct timeval day_tm;
     if (flag == 0)
     {
+        temp_node->fstat.st_dev = dev;
         temp_node->fstat.st_ino = inode_num++;
-        temp_node->fstat.st_mode = mode;
         temp_node->fstat.st_gid = getgid();
-        temp_node->fstat.st_uid = getuid();
         gettimeofday(&day_tm, NULL);
-        temp_node->fstat.st_atime = day_tm.tv_sec;
+        temp_node->fstat.st_nlink = 1;
     }
-
-    temp_node->fstat.st_dev = dev;
-    temp_node->fstat.st_nlink = 1;
-
+    temp_node->fstat.st_atime = day_tm.tv_sec;
     if (flag == 0)
     {
+        temp_node->fstat.st_mode = mode;
+        temp_node->fstat.st_uid = getuid();
         temp_node->fstat.st_ctime = day_tm.tv_sec;
         temp_node->fstat.st_mtime = day_tm.tv_sec;
     }
-
     return;
 }
 
@@ -446,14 +451,16 @@ int nphfuse_mkdir(const char *path, mode_t mode)
 
         for (i = 0; i < 16; i++)
         {
-            if ((t_inode_data[i].dir_name[0] == '\0') &&
-                (t_inode_data[i].file_name[0] == '\0'))
+            if (t_inode_data[i].dir_name[0] == '\0')
             {
-                log_msg("\nmkdir:: Free index:%d, offset:%d\n", i, offset);
-                inode_data = &t_inode_data[i];
-                log_msg("\nafter inode_data\n");
-                check = 1;
-                break;
+                if (t_inode_data[i].file_name[0] == '\0')
+                {
+                    log_msg("\nmkdir:: Free index:%d, offset:%d\n", i, offset);
+                    inode_data = &t_inode_data[i];
+                    log_msg("\nafter inode_data\n");
+                    check = 1;
+                    break;
+                }
             }
         }
         if (check == 1)

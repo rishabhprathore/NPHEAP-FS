@@ -890,7 +890,7 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
     uint8_t *data_block = NULL;
     uint8_t *temp = NULL;
     size_t data_size = 0;
-    int retVal = 0;
+    int ret = 0;
     struct timeval day_tm;
     size_t len =0;
 
@@ -960,16 +960,16 @@ int nphfuse_write(const char *path, const char *buf, size_t size, off_t offset,
             log_msg("\nwrite: path: %s b_write = %d, rel_offset = %d\n", path, b_write, rel_offset);
         }
 
-        retVal = b_write;
+        ret = b_write;
     }
 
     gettimeofday(&day_tm, NULL);
     inode_data->fstat.st_atime = day_tm.tv_sec;
     inode_data->fstat.st_mtime = day_tm.tv_sec;
     inode_data->fstat.st_ctime = day_tm.tv_sec;
-    inode_data->fstat.st_size += retVal;
+    inode_data->fstat.st_size += ret;
 
-    return retVal;
+    return ret;
 }
 
 void statfs_helper(i_node *t_inode_data, struct statvfs *statv)
@@ -1076,8 +1076,7 @@ int nphfuse_release(const char *path, struct fuse_file_info *fi)
         return 0;
 }
 
-/** Synchronize file contents
- */
+/** Synchronize file contents*/
 int nphfuse_fsync(const char *path, int datasync, struct fuse_file_info *fi)
 {
     int ret = -1;
@@ -1088,38 +1087,40 @@ int nphfuse_fsync(const char *path, int datasync, struct fuse_file_info *fi)
 /** Set extended attributes */
 int nphfuse_setxattr(const char *path, const char *name, const char *value, size_t size, int flags)
 {
-    return -61;
+    int ret =-61;
+    log_msg("\n Inside xattr\n");
+    return ret;
 }
 
 /** Get extended attributes */
 int nphfuse_getxattr(const char *path, const char *name, char *value, size_t size)
 {
-    return -61;
+    int ret = -61;
+    log_msg("\n Inside xattr\n");
+    return ret;
 }
 
 /** List extended attributes */
 int nphfuse_listxattr(const char *path, char *list, size_t size)
 {
-    return -61;
+    int ret = -61;
+    log_msg("\n Inside xattr\n");
+    return ret;
 }
 
 /** Remove extended attributes */
 int nphfuse_removexattr(const char *path, const char *name)
 {
-    return -61;
+    int ret = -61;
+    log_msg("\n Inside xattr\n");
+    return ret;
 }
 #endif
 
-/** Open directory
- *
- * This method should check if the open operation is permitted for
- * this directory
- *
- * Introduced in version 2.3
- */
+/** Open directory */
 int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
 {
-    log_msg("\ninside opendir for path: %s\n", path);
+    int ret =0;
     i_node *inode_data = NULL;
 
     inode_data = get_inode(path);
@@ -1134,12 +1135,13 @@ int nphfuse_opendir(const char *path, struct fuse_file_info *fi)
         return -EACCES;
     }
 
-    return 0;
+    return ret;
 }
 
 int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t offset,
                     struct fuse_file_info *fi)
 {
+    int ret =0;
     struct dirent de;
     i_node *inode_data = NULL;
     log_msg("\nreaddir for path: %s\n", path);
@@ -1166,30 +1168,25 @@ int nphfuse_readdir(const char *path, void *buf, fuse_fill_dir_t filler, off_t o
                     return -ENOMEM;
             }
         }
-        //log_msg("\nreaddir end of iteration\n");
     }
-    return 0;
+    return ret;
 }
 
 /** Release directory
  */
 int nphfuse_releasedir(const char *path, struct fuse_file_info *fi)
 {
-    return 0;
+    int ret = 0;
+    log_msg("\nInside releasdedir\n");
+    return ret;
 }
 
-/** Synchronize directory contents
- *
- * If the datasync parameter is non-zero, then only the user data
- * should be flushed, not the meta data
- *
- * Introduced in version 2.3
- */
-// when exactly is this called?  when a user calls fsync and it
-// happens to be a directory? ???
+
 int nphfuse_fsyncdir(const char *path, int datasync, struct fuse_file_info *fi)
 {
-    return 0;
+    int ret =0;
+    log_msg("\nInside fsync\n");
+    return ret;
 }
 
 int nphfuse_access(const char *path, int mask)
@@ -1275,6 +1272,7 @@ int nphfuse_ftruncate(const char *path, off_t offset, struct fuse_file_info *fi)
  */
 int nphfuse_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_info *fi)
 {
+    int ret=0;
     i_node *inode_data = NULL;
     i_node *t_inode_data = NULL;
     char dir_name[224];
@@ -1313,8 +1311,8 @@ int nphfuse_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_in
     {
         return -ENOENT;
     }
-    memcpy(statbuf, &inode_data->fstat, sizeof(struct stat));
-    return 0;
+    memcpy(statbuf, &inode_data->fstat, 144);
+    return ret;
 }
 
 void *nphfuse_init(struct fuse_conn_info *conn)
@@ -1326,13 +1324,7 @@ void *nphfuse_init(struct fuse_conn_info *conn)
     return NPHFS_DATA;
 }
 
-/**
- * Clean up filesystem
- *
- * Called on filesystem exit.
- *
- * Introduced in version 2.3
- */
+
 void nphfuse_destroy(void *userdata)
 {
     if (npheap_fd)
