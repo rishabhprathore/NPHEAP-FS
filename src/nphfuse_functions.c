@@ -200,7 +200,6 @@ static i_node *get_inode(const char *path)
 
         if (inode_data == 0)
         {
-            log_msg("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
             return NULL;
         }
 
@@ -1200,14 +1199,11 @@ int nphfuse_access(const char *path, int mask)
 
     for (offset = 2; offset < 1000; offset++)
     {
-        /*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
-                                                npheap_getsize(npheap_fd, offset));
-*/
+        
         t_inode_data = (i_node *)data_array[offset];
 
         if (t_inode_data == 0)
         {
-            printf("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
             inode_data = NULL;
         }
 
@@ -1283,14 +1279,10 @@ int nphfuse_fgetattr(const char *path, struct stat *statbuf, struct fuse_file_in
 
     for (offset = 2; offset < 1000; offset++)
     {
-        /*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
-                                                npheap_getsize(npheap_fd, offset));
-*/
         t_inode_data = (i_node *)data_array[offset];
 
         if (t_inode_data == 0)
         {
-            log_msg("Fetching unsuccessful for offset: %llu, having the desired inode file:\n", offset);
             inode_data = NULL;
         }
 
