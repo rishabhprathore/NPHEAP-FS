@@ -23,6 +23,12 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <sys/time.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <libgen.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 int npheap_fd = 0;
 uint64_t inode_num = 2;
@@ -42,10 +48,6 @@ uint64_t data_next[10000];
  * ignored.  The 'st_ino' field is ignored except if the 'use_ino'
  * mount option is given.
  */
-#include <libgen.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 extern struct nphfuse_state *nphfuse_data;
 
@@ -120,16 +122,12 @@ int resolve_path(const char *path, char *dir, char *file)
     {
         strcpy(dir, "/");
         strcpy(file, "/");
-        printf("[%s]: dir:%s, file:%s\n", __func__, dir, file);
         return 0;
     }
 
     string = strdup(path);
     if (!string)
-    {
-        printf("failed to allocate memory to string\n");
         return 1;
-    }
 
     ptr = strtok(string, "/");
     if (!ptr)
@@ -151,8 +149,6 @@ int resolve_path(const char *path, char *dir, char *file)
         strcpy(dir, "/");
     }
     strncpy(file, prev, 128);
-
-    printf("[%s]: dir:%s, file:%s\n", __func__, dir, file);
     free(string);
     return 0;
 }
@@ -266,8 +262,8 @@ static void npheap_fs_init(void)
     root_inode = get_root_inode();
 
     log_msg("\nnphfuse_fs_init()  1\n");
+
     strcpy(root_inode->dir_name, "/");
-    log_msg("\nnphfuse_fs_init()  2\n");
     strcpy(root_inode->file_name, "/");
     root_inode->fstat.st_ino = inode_num++;
     root_inode->fstat.st_mode = S_IFDIR | 0755;
@@ -345,12 +341,14 @@ int nphfuse_mknod(const char *path, mode_t mode, dev_t dev)
         t_inode_data = (i_node *)data_array[offset];
         for (i = 0; i < 16; i++)
         {
-            if ((t_inode_data[i].dir_name[0] == '\0') &&
-                (t_inode_data[i].file_name[0] == '\0'))
+            if (t_inode_data[i].dir_name[0] == '\0')
             {
-                inode_data = &t_inode_data[i];
-                check = 1;
-                break;
+                if (t_inode_data[i].file_name[0] == '\0')
+                {
+                    inode_data = &t_inode_data[i];
+                    check = 1;
+                    break;
+                }
             }
         }
         if (check == 1)
@@ -398,6 +396,12 @@ void mkdir_fstat_helper(i_node *temp_node, mode_t mode)
 {
 
     struct timeval day_tm;
+    int flag = 1;
+    if (flag == 1)
+    {
+        gettimeofday(&day_tm, NULL);
+        temp_node->fstat.st_atime = day_tm.tv_sec;
+    }
 
     temp_node->fstat.st_ino = inode_num++;
     temp_node->fstat.st_mode = S_IFDIR | mode;
@@ -408,8 +412,12 @@ void mkdir_fstat_helper(i_node *temp_node, mode_t mode)
 
     gettimeofday(&day_tm, NULL);
     temp_node->fstat.st_atime = day_tm.tv_sec;
-    temp_node->fstat.st_mtime = day_tm.tv_sec;
-    temp_node->fstat.st_ctime = day_tm.tv_sec;
+
+    if (flag == 1)
+    {
+        temp_node->fstat.st_ctime = day_tm.tv_sec;
+        temp_node->fstat.st_mtime = day_tm.tv_sec;
+    }
 
     return;
 }
@@ -427,9 +435,6 @@ int nphfuse_mkdir(const char *path, mode_t mode)
     int check = 0;
     for (offset = 2; offset < 1000; offset++)
     {
-        /*        t_inode_data = (i_node *)npheap_alloc(npheap_fd, offset,
-                                                npheap_getsize(npheap_fd, offset));
-*/
         t_inode_data = (i_node *)data_array[offset];
 
         for (i = 0; i < 16; i++)
