@@ -970,7 +970,7 @@ void statfs_helper(i_node *t_inode_data, struct statvfs *statv)
         t_inode_data = (i_node *)data_array[offset];
         for (i = 0; i < 16; i++)
             if (t_inode_data[i].dir_name[0] == '\0'){
-                if (t_inode_data[i].file_name[0] == '\0')) 
+                if (t_inode_data[i].file_name[0] == '\0') 
                 continue;
             }
         inuse_block_num = inuse_block_num+1;
